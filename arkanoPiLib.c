@@ -179,7 +179,7 @@ void ActualizaPantalla(tipo_arkanoPi* p_arkanoPi) {
 // desarrollo del juego y su visualizacion.
 void InicializaArkanoPi(tipo_arkanoPi *p_arkanoPi) {
 	printf("%s\n", "[LOG] InicializaArkanoPi");
-	// TODO ¿Que diferencia hay entre este metodo y InicializaJuego? ¿Que mas hace falta?
+	// TODO Que mas hace falta?
 	ReseteaMatriz((tipo_pantalla*)(&(p_arkanoPi->pantalla)));
 	ReseteaLadrillos((tipo_pantalla*)(&(p_arkanoPi->ladrillos)));
 	ReseteaPelota((tipo_pelota*)(&(p_arkanoPi->pelota)));

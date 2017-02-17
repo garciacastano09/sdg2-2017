@@ -12,10 +12,8 @@ static volatile tipo_juego juego;
 // que resulte necesaria para el desarrollo del juego.
 void InicializaJuego (void) {
 	printf("%s\n", "[LOG] InicializaJuego");
-	ReseteaRaqueta(&(juego.arkanoPi.raqueta));
-	ReseteaMatriz(&(juego.arkanoPi.pantalla));
-	ReseteaLadrillos(&(juego.arkanoPi.ladrillos));
-	ReseteaPelota(&(juego.arkanoPi.pelota));
+	// TODO Falta algo aqui?
+	InicializaArkanoPi();
 	juego.estado = WAIT_START;
 	juego.teclaPulsada = NULL;
 }
@@ -37,7 +35,6 @@ void MueveRaquetaIzquierda (void) {
 	else{
 		juego.arkanoPi.raqueta->x--;
 		PintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi->raqueta)), (tipo_pantalla*)(&(juego.arkanoPi->pantalla)));
-		//ActualizaPantalla((tipo_arkanoPi*)(&(juego->arkanoPi)));
 	}
 }
 
@@ -53,9 +50,151 @@ void MueveRaquetaDerecha (void) {
 	else{
 		juego.arkanoPi.raqueta->x++;
 		PintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi->raqueta)), (tipo_pantalla*)(&(juego.arkanoPi->pantalla)));
-		//ActualizaPantalla((tipo_arkanoPi*)(&(juego->arkanoPi)))
 	}
 
+}
+
+// void MovimientoPelota (void): función encargada de actualizar la
+// posición de la pelota conforme a la trayectoria definida para ésta.
+// Para ello deberá identificar los posibles rebotes de la pelota para,
+// en ese caso, modificar su correspondiente trayectoria (los rebotes
+// detectados contra alguno de los ladrillos implicarán adicionalmente
+// la eliminación del ladrillo). Del mismo modo, deberá también
+// identificar las situaciones en las que se dé por finalizada la partida:
+// bien porque el jugador no consiga devolver la pelota, y por tanto ésta
+// rebase el límite inferior del área de juego, bien porque se agoten
+// los ladrillos visibles en el área de juego.
+void MovimientoPelota(void) {
+	printf("%s\n", "[LOG] MovimientoPelota");
+	// Elegimos lo que se hace segun el tipo de rebote
+	flag_rebote = ObtenerTipoDeRebote();
+	switch(flag_rebote) {
+		// Caso en que no existe rebote porque la siguiente casilla esta vacia
+	    case NO_REBOTE:
+	    	DesplazarPelota();
+			break;	
+	    // Caso en que se choca contra la raqueta
+	    case REBOTE_RAQUETA:
+	    	RebotarEnRaqueta();	    	
+	    	break;	
+		// Caso en que se choca contra un lateral: izquierda o derecha
+	    case REBOTE_LATERAL:
+	    	ReboteLateral();
+	        break;	 
+		// Caso en que se choca contra un ladrillo
+	    case REBOTE_LADRILLO:
+	    	RebotarEnLadrillo():
+	    	ComprobarExito();
+	        break;
+	    // Caso en que se choca contra el techo (cuando ya no hay ladrillos debajo)
+	    case REBOTE_TECHO:
+	    	ReboteSuperior();
+	        break;	  
+	    // Caso en que se choca contra un el limite inferior (pierdes la partida)
+	    case REBOTE_PERDIDA:
+	    	// TODO diferencia entre ganar y perder la partida
+	    	FinalJuego();
+	        break;  
+	}	
+}
+
+// void FinalJuego (void): función encargada de mostrar en la ventana de
+// terminal los mensajes necesarios para informar acerca del resultado del juego.
+void FinalJuego (void) {
+	printf("%s\n", "[LOG] FinalJuego");
+	// TODO poner mensaje de fin de juego
+
+	// Fijar el estado del jeugo a END
+	juego.estado = WAIT_END;
+}
+
+//void ReseteaJuego (void): función encargada de llevar a cabo la
+// reinicialización de cuantas variables o estructuras resulten
+// necesarias para dar comienzo a una nueva partida.
+void ReseteaJuego (void) {
+	printf("%s\n", "[LOG] ReseteaJuego");
+	// TODO ¿Diferencia con InicializaJuego?
+	InicializaJuego();
+}
+
+//------------------------------------------------------
+// FUNCIONES DE INICIALIZACION
+//------------------------------------------------------
+
+// int systemSetup (void): procedimiento de configuracion del sistema.
+// Realizará, entra otras, todas las operaciones necesarias para:
+// configurar el uso de posibles librerías (e.g. Wiring Pi),
+// configurar las interrupciones externas asociadas a los pines GPIO,
+// configurar las interrupciones periódicas y sus correspondientes temporizadores,
+// crear, si fuese necesario, los threads adicionales que pueda requerir el sistema
+int systemSetup (void) {
+	printf("%s\n", "[LOG] systemSetup");
+	// TODO ???
+}
+
+int main ()
+{
+	printf("%s\n", "[LOG] main");
+
+	// Configuracion e inicializacion del sistema
+	InicializaJuego();
+	systemSetup();
+	while (1) {
+		if(kbhit()) { // Funcion que detecta si se ha producido pulsacion de tecla alguna
+			juego.teclaPulsada = kbread(); // Funcion que devuelve la tecla pulsada
+
+			// Interpretacion de las pulsaciones para cada posible estado del sistema
+			if( juego.estado == WAIT_START ) { // Cualquier pulsacion da comienzo al juego...
+				// Descomente ambas lineas y sustituya cada etiqueta XXXXXXX por lo que corresponda en cada caso...
+				// XXXXXXX();
+				// juego.estado = XXXXXXX;
+			}
+			else if( juego.estado == WAIT_END ) { // Cualquier nos devuelve al estado inicial...
+				// Descomente ambas lineas y sustituya cada etiqueta XXXXXXX por lo que corresponda en cada caso...
+				// XXXXXXX();
+				// juego.estado = XXXXXXX;
+			}
+			else { // Si estamos jugando...
+				switch(juego.teclaPulsada) {
+					case 'i': // Mover raqueta a la izquierda
+						// A completar por el alumno...
+						MueveRaquetaIzquierda();
+						ActualizaPantalla((tipo_arkanoPi*)(&(juego->arkanoPi)));
+						break;
+
+					case 'o': // Mover Raqueta a la derecha
+						MueveRaquetaDerecha();
+						ActualizaPantalla((tipo_arkanoPi*)(&(juego->arkanoPi)));
+						break;
+
+					case 'p': // Mover pelota
+						MovimientoPelota();
+						ActualizaPantalla((tipo_arkanoPi*)(&(juego->arkanoPi)));
+						break;
+
+					case 'q': // Salir
+						exit(0);
+						break;
+
+					default:
+						printf("INVALID KEY!!!\n");
+						break;
+				}
+			}
+		}
+	}
+}
+
+//---------------------
+// FUNCIONES SUPPORT
+//---------------------
+
+void ComprobarExito(void){
+	printf("%s\n", "[LOG] ComprobarExito");
+	if(CalculaLadrillosRestantes() == 0){
+		// Ganas
+		// FinalJuego();
+	}
 }
 
 // int ObtenerTipoDeRebote(void): verifica si la proxima casilla causará 
@@ -70,10 +209,15 @@ int ObtenerTipoDeRebote(void){
 		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE PERDIDA");
 		return REBOTE_PERDIDA;
 	}
-	if(nuevo_x == MATRIZ_ANCHO || nuevo_x == -1 || nuevo_y == MATRIZ_ALTO){
-		// Caso de limite de pantalla
-		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE LIMITE");
+	if(nuevo_x == MATRIZ_ANCHO || nuevo_x == -1){
+		// Caso de lateral de la pantalla
+		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE LATERAL");
 		return REBOTE_LIMITE;
+	}
+	if(nuevo_y == MATRIZ_ALTO){
+		// Caso de techo de la pantalla
+		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE TECHO");
+		return REBOTE_TECHO;
 	}
 	if(nuevo_x == raqueta_x || nuevo_x == raqueta_x + 1 || nuevo_x == raqueta_x - 1){
 		// Caso de choque contra raqueta
@@ -114,7 +258,7 @@ void ReboteLadrillo(void){
 }
 
 // void ReboteSuperior(void): cambia la trayectoria de la pelota hacia abajo
-void ReboteSuperior(void){
+void ReboteTecho(void){
 	printf("%s\n", "[LOG] ReboteSuperior");
 	// Cambiamos trayectoria
 	juego.arkanoPi.pelota.yv = - juego.arkanoPi.pelota.yv;
@@ -136,130 +280,26 @@ void ReboteLateral(void){
 // correspondiente
 void ReboteRaqueta(void){
 	printf("%s\n", "[LOG] ReboteRaqueta");
-	// TODO
+	nueva_posicion_x = juego.arkanoPi.pelota.x;
+	// Cambiamos trayectoria
+	// Caso en que la pelota choca a la IZQUIERDA de la raqueta
+	if(nueva_posicion_x == juego.arkanoPi.raqueta.x - 1){
+			juego.arkanoPi.pelota.xv = - 1;
+	}
+	// Caso en que la pelota choca al CENTRO de la raqueta
+	if(nueva_posicion_x == juego.arkanoPi.raqueta.x){
+			juego.arkanoPi.pelota.xv = 0;
+	}
+	// Caso en que la pelota choca a la DERECHA de la raqueta
+	if(nueva_posicion_x == juego.arkanoPi.raqueta.x + 1){
+			juego.arkanoPi.pelota.xv = 1;
+	}
+	else{
+		printf("%s\n", "[LOG] ReboteRaqueta: ");
+		return;
+	}
+	// La pelota en cualquier caso va hacia arriba
+	juego.arkanoPi.pelota.yv = - 1;
    	DesplazarPelota();
-	return;
 }
 
-
-// void MovimientoPelota (void): función encargada de actualizar la
-// posición de la pelota conforme a la trayectoria definida para ésta.
-// Para ello deberá identificar los posibles rebotes de la pelota para,
-// en ese caso, modificar su correspondiente trayectoria (los rebotes
-// detectados contra alguno de los ladrillos implicarán adicionalmente
-// la eliminación del ladrillo). Del mismo modo, deberá también
-// identificar las situaciones en las que se dé por finalizada la partida:
-// bien porque el jugador no consiga devolver la pelota, y por tanto ésta
-// rebase el límite inferior del área de juego, bien porque se agoten
-// los ladrillos visibles en el área de juego.
-void MovimientoPelota(void) {
-	// Checkear trayectoria
-	// Acutualizar posicion de la pelota
-	// Actualizar trayectoria
-	printf("%s\n", "[LOG] MovimientoPelota");
-	flag_rebote = ObtenerTipoDeRebote();
-	switch(flag_rebote) {
-	    case NO_REBOTE:
-	    	DesplazarPelota();
-			break;		
-	    case REBOTE_LADRILLO:
-	    	RebotarEnLadrillo():
-	        break;
-	    case REBOTE_RAQUETA:
-	    	RebotarEnRaqueta();	    	
-	    	break;
-	    case REBOTE_PERDIDA:
-	    	FinalJuego();
-	        break;
-	    case REBOTE_DERECHO:
-	    	ReboteDerecho();
-	        break;	  
-	    case REBOTE_IZQUIERDO:
-	    	ReboteIzquierdo();
-	        break;	
-	    case REBOTE_SUPERIOR:
-	    	ReboteSuperior();
-	        break;	    
-	}
-	
-}
-
-// void FinalJuego (void): función encargada de mostrar en la ventana de
-// terminal los mensajes necesarios para informar acerca del resultado del juego.
-void FinalJuego (void) {
-	// A completar por el alumno...
-
-}
-
-//void ReseteaJuego (void): función encargada de llevar a cabo la
-// reinicialización de cuantas variables o estructuras resulten
-// necesarias para dar comienzo a una nueva partida.
-void ReseteaJuego (void) {
-	// TODO ¿Diferencia con InicializaJuego?
-	InicializaJuego();
-}
-
-//------------------------------------------------------
-// FUNCIONES DE INICIALIZACION
-//------------------------------------------------------
-
-// int systemSetup (void): procedimiento de configuracion del sistema.
-// Realizará, entra otras, todas las operaciones necesarias para:
-// configurar el uso de posibles librerías (e.g. Wiring Pi),
-// configurar las interrupciones externas asociadas a los pines GPIO,
-// configurar las interrupciones periódicas y sus correspondientes temporizadores,
-// crear, si fuese necesario, los threads adicionales que pueda requerir el sistema
-int systemSetup (void) {
-	// A completar por el alumno...
-
-}
-
-int main ()
-{
-	// Configuracion e inicializacion del sistema
-	// A completar por el alumno...
-
-	while (1) {
-		if(kbhit()) { // Funcion que detecta si se ha producido pulsacion de tecla alguna
-			juego.teclaPulsada = kbread(); // Funcion que devuelve la tecla pulsada
-
-			// Interpretacion de las pulsaciones para cada posible estado del sistema
-			if( juego.estado == WAIT_START ) { // Cualquier pulsacion da comienzo al juego...
-				// Descomente ambas lineas y sustituya cada etiqueta XXXXXXX por lo que corresponda en cada caso...
-				// XXXXXXX();
-				// juego.estado = XXXXXXX;
-			}
-			else if( juego.estado == WAIT_END ) { // Cualquier nos devuelve al estado inicial...
-				// Descomente ambas lineas y sustituya cada etiqueta XXXXXXX por lo que corresponda en cada caso...
-				// XXXXXXX();
-				// juego.estado = XXXXXXX;
-			}
-			else { // Si estamos jugando...
-				switch(juego.teclaPulsada) {
-					case 'i':
-						// A completar por el alumno...
-
-						break;
-
-					case 'o':
-						// A completar por el alumno...
-
-						break;
-
-					case 'p':
-						// A completar por el alumno...
-
-						break;
-
-					case 'q':
-						exit(0);
-						break;
-
-					default:
-						printf("INVALID KEY!!!\n");
-						break;
-				}
-			}
-		}
-	}
-}

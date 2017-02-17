@@ -13,13 +13,11 @@
 #define RAQUETA_ALTO 		1
 #define MAX_X_RAQUETA 		8
 #define MIN_X_RAQUETA 		1
-#define REBOTE_LIMITE 		20
 #define REBOTE_LADRILLO		21
 #define REBOTE_RAQUETA		22
 #define REBOTE_PERDIDA		23
-#define REBOTE_SUPERIOR		24
-#define REBOTE_IZQUIERDO	25
-#define REBOTE_DERECHO		26
+#define REBOTE_TECHO		24
+#define REBOTE_LATERAL		25
 #define NO_REBOTE			29	
 
 typedef struct {
