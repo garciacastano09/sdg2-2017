@@ -31,7 +31,6 @@
 #define	FLAGS_KEY	1
 #define	STD_IO_BUFFER_KEY	2
 
-
 typedef enum {
 	WAIT_START,
 	WAIT_PUSH,
@@ -53,7 +52,6 @@ void MueveRaquetaIzquierda (void);
 void MueveRaquetaDerecha (void);
 void MovimientoPelota (void);
 
-
 //------------------------------------------------------
 // FUNCIONES DE INICIALIZACION
 //------------------------------------------------------
@@ -73,6 +71,5 @@ int comprueba_final_juego (fsm_t* this)
 // SUBRUTINAS DE ATENCION A LAS INTERRUPCIONES
 //------------------------------------------------------
 PI_THREAD (thread_explora_teclado);
-
 
 #endif /* ARKANOPI_H_ */

@@ -23,7 +23,7 @@ int comprueba_tecla_pelota (fsm_t* this) {
 	int result;
 
 	piLock (FLAGS_KEY);
-	result = (flags & FLAG_TECLA_P);
+	result = (flags & FLAG_PELOTA);
 	piUnlock (FLAGS_KEY);
 
 	return result;
@@ -33,7 +33,7 @@ int comprueba_tecla_raqueta_derecha (fsm_t* this) {
 	int result;
 
 	piLock (FLAGS_KEY);
-	result = (flags & FLAG_TECLA_O);
+	result = (flags & FLAG_RAQUETA_DERECHA;
 	piUnlock (FLAGS_KEY);
 
 	return result;
@@ -43,7 +43,7 @@ int comprueba_tecla_raqueta_izquierda (fsm_t* this) {
 	int result;
 
 	piLock (FLAGS_KEY);
-	result = (flags & FLAG_TECLA_I);
+	result = (flags & FLAG_RAQUETA_IZQUIERDA);
 	piUnlock (FLAGS_KEY);
 
 	return result;
@@ -493,5 +493,3 @@ int main ()
 
 	fsm_destroy (arkano_fsm);
 }
-
-
