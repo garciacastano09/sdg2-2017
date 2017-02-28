@@ -13,16 +13,16 @@
 
 #include "kbhit.h" // para poder detectar teclas pulsadas sin bloqueo y leer las teclas pulsadas
 
+#include "fsm.h"
 #include "arkanoPiLib.h"
 
 // FLAGS DEL SISTEMA
 #define CLK_MS 10 // PERIODO DE ACTUALIZACION DE LA MAQUINA ESTADOS
-#define FLAG_TECLA			0x01 
-#define FLAG_PELOTA			0x02
-#define FLAG_RAQUETA_DERECHA			0x04
-#define FLAG_RAQUETA_IZQUIERDA			0x08
-#define FLAG_FINAL_JUEGO		0x16
-#define FLAG_JOYSTICK		0x20
+#define FLAG_PELOTA			0x01
+#define FLAG_RAQUETA_DERECHA			0x02
+#define FLAG_RAQUETA_IZQUIERDA			0x04
+#define FLAG_FINAL_JUEGO		0x8
+#define FLAG_JOYSTICK		0x16
 
 
 // A 'key' which we can lock and unlock - values are 0 through 3
@@ -47,7 +47,7 @@ typedef struct {
 //------------------------------------------------------
 void InicializaJuego (void);
 void FinalJuego (void);
-void ReseteaJuego (void);
+void ReseteaJuego (fsm_t* this);
 void MueveRaquetaIzquierda (void);
 void MueveRaquetaDerecha (void);
 void MovimientoPelota (void);
@@ -65,7 +65,7 @@ int comprueba_tecla_pelota (fsm_t* this);
 int comprueba_tecla_raqueta_derecha (fsm_t* this);
 int comprueba_tecla_raqueta_izquierda (fsm_t* this);
 int comprueba_joystick (fsm_t* this);
-int comprueba_final_juego (fsm_t* this)
+int comprueba_final_juego (fsm_t* this);
 
 //------------------------------------------------------
 // SUBRUTINAS DE ATENCION A LAS INTERRUPCIONES
