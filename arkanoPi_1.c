@@ -16,26 +16,27 @@ void delay_until (unsigned int next) {
     }
 }
 
-//------------------------------------------------------
-// FUNCIONES DE LA MAQUINA DE ESTADOS
-//------------------------------------------------------
+//-----------------------------------------------------------------------------------
+// FUNCIONES DE LA MAQUINA DE ESTADOS: Comprueban si se debe cambiar de estado o no
+//-----------------------------------------------------------------------------------
 
 // FUNCIONES DE ENTRADA O COMPROBACIÓN DE LA MAQUINA DE ESTADOS 
 int comprueba_tecla_pulsada(fsm_t* this){
 	int result;
 
 	piLock (FLAGS_KEY);
+	// result vale 1 si en la variable flags se ha marcado FLAG_PELOTA, FLAG_RAQUETA_DERECHA o FLAG_RAQUETA_IZQUIERDA
 	result = (flags & FLAG_PELOTA) || (flags & FLAG_RAQUETA_DERECHA) || (flags & FLAG_RAQUETA_IZQUIERDA);
 	piUnlock (FLAGS_KEY);
 
 	return result;
-
 }
 
 int comprueba_tecla_pelota (fsm_t* this) {
 	int result;
 
 	piLock (FLAGS_KEY);
+	// result vale 1 si en la variable flags se ha marcado FLAG_PELOTA
 	result = (flags & FLAG_PELOTA);
 	piUnlock (FLAGS_KEY);
 
@@ -44,7 +45,7 @@ int comprueba_tecla_pelota (fsm_t* this) {
 
 int comprueba_tecla_raqueta_derecha (fsm_t* this) {
 	int result;
-
+	// result vale 1 si en la variable flags se ha marcado FLAG_RAQUETA_DERECHA
 	piLock (FLAGS_KEY);
 	result = (flags & FLAG_RAQUETA_DERECHA);
 	piUnlock (FLAGS_KEY);
@@ -54,7 +55,7 @@ int comprueba_tecla_raqueta_derecha (fsm_t* this) {
 
 int comprueba_tecla_raqueta_izquierda (fsm_t* this) {
 	int result;
-
+	// result vale 1 si en la variable flags se ha marcado FLAG_RAQUETA_IZQUIERDA
 	piLock (FLAGS_KEY);
 	result = (flags & FLAG_RAQUETA_IZQUIERDA);
 	piUnlock (FLAGS_KEY);
@@ -62,14 +63,15 @@ int comprueba_tecla_raqueta_izquierda (fsm_t* this) {
 	return result;
 }
 
-int comprueba_joystick(fsm_t* this) {
-	return 999;
-}
+// int comprueba_joystick(fsm_t* this) {
+// 	return 999;
+// }
 
 int comprueba_final_juego (fsm_t* this) {
 	int result;
 
 	piLock (FLAGS_KEY);
+	// result vale 1 si en la variable flags se ha marcado FLAG_FINAL_JUEGO
 	result = (flags & FLAG_FINAL_JUEGO);
 	piUnlock (FLAGS_KEY);
 
@@ -77,39 +79,42 @@ int comprueba_final_juego (fsm_t* this) {
 }
 
 
-//---------------------
-// FUNCIONES SUPPORT
-//---------------------
+//------------------------------------------------------------------------------------------------------------------------------
+// FUNCIONES SUPPORT: Funciones que ayudan a la coherencia del código, pero que no implementan ninguna funcion final
+//------------------------------------------------------------------------------------------------------------------------------
 
 // int ObtenerTipoDeRebote(void): verifica si la proxima casilla causará
 // un rebote y de qué tipo
 int ObtenerTipoDeRebote(void){
 	printf("%s\n", "[LOG] ObtenerTipoDeRebote");
+	// Calculo de las nuevas coordenadas que tendría la pelota en el próximo movimiento
 	int nuevo_y = juego.arkanoPi.pelota.y + juego.arkanoPi.pelota.yv;
 	int nuevo_x = juego.arkanoPi.pelota.x + juego.arkanoPi.pelota.xv;
+
 	int raqueta_x = juego.arkanoPi.raqueta.x;
-	if(nuevo_y == -1){
-		// Caso de perdida de pelota
+
+	// Caso de perdida de pelota
+	if(nuevo_y == MATRIZ_ALTO){
 		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE PERDIDA");
 		return REBOTE_PERDIDA;
 	}
-	if(nuevo_x == MATRIZ_ANCHO || nuevo_x == -1){
-		// Caso de lateral de la pantalla
+	// Caso de lateral de la pantalla
+	else if(nuevo_x == MATRIZ_ANCHO || nuevo_x == -1){
 		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE LATERAL");
 		return REBOTE_LATERAL;
 	}
-	if(nuevo_y == 0){
-		// Caso de techo de la pantalla
+	// Caso de techo de la pantalla
+	else if(nuevo_y == -1){
 		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE TECHO");
 		return REBOTE_TECHO;
 	}
-	if(nuevo_y == MATRIZ_ALTO - 1 && (nuevo_x == raqueta_x || nuevo_x == raqueta_x + 1 || nuevo_x == raqueta_x - 1)){
-		// Caso de choque contra raqueta
+	// Caso de choque contra raqueta
+	else if(nuevo_y == MATRIZ_ALTO - 1 && (nuevo_x == raqueta_x || nuevo_x == raqueta_x + 1 || nuevo_x == raqueta_x - 1)){
 		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE RAQUETA");
 		return REBOTE_RAQUETA;
 	}
-	if(juego.arkanoPi.ladrillos.matriz[nuevo_x][nuevo_y]){
-		// Caso de choque contra ladrillo
+	// Caso de choque contra ladrillo
+	else if(juego.arkanoPi.ladrillos.matriz[nuevo_x][nuevo_y]){
 		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE LADRILLO");
 		return REBOTE_LADRILLO;
 	}
@@ -164,7 +169,7 @@ void ReboteLateral(void){
 // correspondiente
 void ReboteRaqueta(void){
 	printf("%s\n", "[LOG] ReboteRaqueta");
-	int nueva_posicion_x = juego.arkanoPi.pelota.x;
+	int nueva_posicion_x = juego.arkanoPi.pelota.x + juego.arkanoPi.pelota.xv;
 	// Cambiamos trayectoria
 	// Caso en que la pelota choca a la IZQUIERDA de la raqueta
 	if(nueva_posicion_x == juego.arkanoPi.raqueta.x - 1){
@@ -180,16 +185,15 @@ void ReboteRaqueta(void){
 	}
 	else{
 		printf("%s\n", "[LOG] ReboteRaqueta: ");
-		return;
 	}
 	// La pelota en cualquier caso va hacia arriba
 	juego.arkanoPi.pelota.yv = - 1;
    	DesplazarPelota();
 }
 
-//------------------------------------------------------
-// FUNCIONES DE ACCION
-//------------------------------------------------------
+//-----------------------------------------------------------------------
+// FUNCIONES DE ACCION: Funciones desencadenadas por un cambio de estado
+//-----------------------------------------------------------------------
 
 // void InicializaJuego (void): funcion encargada de llevar a cabo
 // la oportuna inicialización de toda variable o estructura de datos
@@ -220,10 +224,10 @@ void InicializaJuego (void) {
 void MueveRaquetaIzquierda (void) {
 	piLock (STD_IO_BUFFER_KEY);
 	printf("%s\n", "[LOG] MueveRaquetaIzquierda");
+	// Esto asegura que la raqueta se mantenga en la fila mas baja de la matriz
 	juego.arkanoPi.raqueta.y=MATRIZ_ALTO-1;
 	if(juego.arkanoPi.raqueta.x < MIN_X_RAQUETA+1){
 		printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la izquierda imposible");
-		return;
 	}
 	else{
 		juego.arkanoPi.raqueta.x--;
@@ -248,10 +252,10 @@ void MueveRaquetaIzquierda (void) {
 void MueveRaquetaDerecha (void) {
 	piLock (STD_IO_BUFFER_KEY);
 	printf("%s\n", "[LOG] MueveRaquetaDerecha");
+	// Esto asegura que la raqueta se mantenga en la fila mas baja de la matriz
 	juego.arkanoPi.raqueta.y=MATRIZ_ALTO-1;
 	if(juego.arkanoPi.raqueta.x > MAX_X_RAQUETA-1){
-		printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la izquierda imposible");
-		return;
+		printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la derecha imposible");
 	}
 	else{
 		juego.arkanoPi.raqueta.x++;
@@ -312,7 +316,10 @@ void MovimientoPelota(void) {
 	    // Caso en que se choca contra un el limite inferior (pierdes la partida)
 	    case REBOTE_PERDIDA:
 			// Pierdes
-			FinalJuego();
+	    	// TODO abstraerlo en una funcion de "rebote"
+	    	piLock (FLAGS_KEY);
+	    	flags |= FLAG_FINAL_JUEGO;
+	    	piUnlock (FLAGS_KEY);
 	        break;
 	}
 	ActualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
@@ -358,13 +365,14 @@ void FinalJuego(void){
 		// Ganas
 	}
 	else{
+		// Pierdes
 	}
 }
 
 
-void ControlJoystick (void){
-	return;
-}
+// void ControlJoystick (void){
+// 	return;
+// }
 
 
 
