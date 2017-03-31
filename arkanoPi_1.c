@@ -34,14 +34,7 @@ static int timer_finished (fsm_t* this){
 static void col_x(fsm_t* this) {
 	col_counter++;
 	columna = col_counter%10;
-    digitalWrite(gpio_row[0], LOW);
-	digitalWrite(gpio_row[1], LOW);
-	digitalWrite(gpio_row[2], LOW);
-	digitalWrite(gpio_row[3], LOW);
-	digitalWrite(gpio_row[4], LOW);
-	digitalWrite(gpio_row[5], LOW);
-	digitalWrite(gpio_row[6], LOW);
-
+	ActivaFilasLed((tipo_pantalla*)(&(juego.arkanoPi.pantalla)), &(columna))
 	switch (columna){
 		case 0:
 			digitalWrite(gpio_col[0], LOW);
@@ -112,6 +105,7 @@ static void col_x(fsm_t* this) {
 			digitalWrite(gpio_col[3], LOW);
 			break;
 	}
+
 	printf("[LOG] Columna numero: %d\n", columna);
 	//col[indice-1]=0;
 	//col[indice]=1;

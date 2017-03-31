@@ -102,6 +102,19 @@ void PintaPantallaPorTerminal  (tipo_pantalla *p_pantalla) {
 	}
 }
 
+void ActivaFilasLed (tipo_pantalla *p_pantalla, int *columna) {
+	printf("%s\n", "[LOG] PintaFilasLed");
+	int i;
+	for(i=0;i<MATRIZ_ALTO;i++) {
+		if(p_pantalla->matriz[i][columna] == 1){
+			digitalWrite(gpio_col[columna], LOW);
+		}
+		else{
+			digitalWrite(gpio_col[columna], HIGH);
+		}
+	}
+}
+
 
 // void PintaLadrillos(...): funcion encargada de “pintar” los ladrillos
 // en sus correspondientes posiciones dentro del área de juego
