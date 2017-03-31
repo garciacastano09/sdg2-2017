@@ -24,6 +24,18 @@
 #define FLAG_FINAL_JUEGO		0x8
 #define FLAG_JOYSTICK		0x16
 
+#define GPIO_COL_1 14
+#define GPIO_COL_2 17
+#define GPIO_COL_3 18
+#define GPIO_COL_4 22
+#define GPIO_ROW_1 0
+#define GPIO_ROW_2 1
+#define GPIO_ROW_3 2
+#define GPIO_ROW_4 3
+#define GPIO_ROW_5 4
+#define GPIO_ROW_6 7
+#define GPIO_ROW_7 23
+#define REFRESH_TIME 40 //tiempo de exploración de columnas
 
 // A 'key' which we can lock and unlock - values are 0 through 3
 //	This is interpreted internally as a pthread_mutex by wiringPi
@@ -32,9 +44,11 @@
 #define	STD_IO_BUFFER_KEY	2
 
 typedef enum {
-	WAIT_START,
-	WAIT_PUSH,
-	WAIT_END} tipo_estados_juego;
+	WAIT_START=0,
+	WAIT_PUSH=1,
+	WAIT_END=2} tipo_estados_juego;
+
+enum refresco_state {REFRESCO_COL};
 
 typedef struct {
 	tipo_arkanoPi arkanoPi;

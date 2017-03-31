@@ -72,12 +72,12 @@ void ReseteaRaqueta(tipo_raqueta *p_raqueta) {
 	p_raqueta->alto = RAQUETA_ALTO;
 }
 
-void RellenaMatriz(tipo_pantalla *p_pantalla, tipo_pantalla *nueva_matriz){
+void PintaMensajeInicial(tipo_pantalla *p_pantalla){
 	printf("%s\n", "[LOG] RellenaMatriz");
 	int i, j = 0;
 	for(i=0;i<MATRIZ_ANCHO;i++) {
 		for(j=0;j<MATRIZ_ALTO;j++) {
-			p_pantalla->matriz[i][j] = nueva_matriz->matriz[i][j];
+			p_pantalla->matriz[i][j] = mensaje_inicial[i][j];
 		}
 	}
 }
@@ -85,16 +85,6 @@ void RellenaMatriz(tipo_pantalla *p_pantalla, tipo_pantalla *nueva_matriz){
 //------------------------------------------------------
 // FUNCIONES DE VISUALIZACION (ACTUALIZACION DEL OBJETO PANTALLA QUE LUEGO USARA EL DISPLAY)
 //------------------------------------------------------
-
-// void PintaMensajeInicialPantalla (...): metodo encargado de aprovechar
-// el display para presentar un mensaje de bienvenida al usuario
-void PintaMensajeInicialPantalla (tipo_pantalla *p_pantalla, tipo_pantalla *p_pantalla_inicial) {
-	printf("%s\n", "[LOG] PintaMensajeInicialPantalla");
-
-	RellenaMatriz(p_pantalla, &(mensaje_inicial));
-	PintaPantallaPorTerminal(p_pantalla);
-}
-
 // void PintaPantallaPorTerminal (...): metodo encargado de mostrar
 // el contenido o la ocupación de la matriz de leds en la ventana de
 // terminal o consola. Este método sera fundamental para facilitar
@@ -111,6 +101,7 @@ void PintaPantallaPorTerminal  (tipo_pantalla *p_pantalla) {
 		printf("%s\n", "");
 	}
 }
+
 
 // void PintaLadrillos(...): funcion encargada de “pintar” los ladrillos
 // en sus correspondientes posiciones dentro del área de juego
@@ -130,14 +121,6 @@ void PintaLadrillos(tipo_pantalla *p_ladrillos, tipo_pantalla *p_pantalla) {
 // en su posicion correspondiente dentro del área de juego
 void PintaRaqueta(tipo_raqueta *p_raqueta, tipo_pantalla *p_pantalla) {
 	printf("%s\n", "[LOG] PintaRaqueta");
-//	int i, j = 0;
-//	for(i=0;i<RAQUETA_ANCHO;i++) {
-//		for(j=0;j<RAQUETA_ALTO;j++) {
-//			if (( (p_raqueta->x+i >= 0) && (p_raqueta->x+i < MATRIZ_ANCHO) ) &&
-//					( (p_raqueta->y+j >= 0) && (p_raqueta->y+j < MATRIZ_ALTO) ))
-//				p_pantalla->matriz[p_raqueta->x+i][p_raqueta->y+j] = 1;
-//		}
-//	}
 	p_pantalla->matriz[p_raqueta->x-1][6] = 1;
 	p_pantalla->matriz[p_raqueta->x+1][6] = 1;
 	p_pantalla->matriz[p_raqueta->x][6] = 1;

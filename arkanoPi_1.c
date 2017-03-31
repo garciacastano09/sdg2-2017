@@ -1,24 +1,134 @@
-
+//------------------------------------------------------------------
+// IMPORTS
+//------------------------------------------------------------------
 #include "arkanoPi_1.h"
 #include <wiringPi.h>
 #include "fsm.h"
 
+//------------------------------------------------------------------
+// VARIABLES ESTATICAS
+//------------------------------------------------------------------
 static volatile tipo_juego juego;
+static int gpio_col[4]={GPIO_COL_1,GPIO_COL_2,GPIO_COL_3,GPIO_COL_4};
+static int gpio_row[7]={GPIO_ROW_1,GPIO_ROW_2,GPIO_ROW_3,GPIO_ROW_4,
+		GPIO_ROW_5,GPIO_ROW_6,GPIO_ROW_7};
+// array de filas
+static int col[4] = {0,0,0,0};
+static int timein=0;
+static int col_counter=0;
+static int columna=0;
 
+//------------------------------------------------------------------
+// VARIABLES VOLATILES
+//------------------------------------------------------------------
 volatile int flags = 0;
+
+//------------------------------------------------------------------
+// FUNCIONES REFRESCO FSM
+//------------------------------------------------------------------
+static int timer_finished (fsm_t* this){
+	return (millis()-timein >=REFRESH_TIME);
+}
+
+// rutina que se ejecuta cada vez que ha pasado cierto tiempo
+static void col_x(fsm_t* this) {
+	col_counter++;
+	columna = col_counter%10;
+    digitalWrite(gpio_row[0], LOW);
+	digitalWrite(gpio_row[1], LOW);
+	digitalWrite(gpio_row[2], LOW);
+	digitalWrite(gpio_row[3], LOW);
+	digitalWrite(gpio_row[4], LOW);
+	digitalWrite(gpio_row[5], LOW);
+	digitalWrite(gpio_row[6], LOW);
+
+	switch (columna){
+		case 0:
+			digitalWrite(gpio_col[0], LOW);
+			digitalWrite(gpio_col[1], LOW);
+			digitalWrite(gpio_col[2], LOW);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+		case 1:
+			digitalWrite(gpio_col[0], HIGH);
+			digitalWrite(gpio_col[1], LOW);
+			digitalWrite(gpio_col[2], LOW);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+		case 2:
+			digitalWrite(gpio_col[0], LOW);
+			digitalWrite(gpio_col[1], HIGH);
+			digitalWrite(gpio_col[2], LOW);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+
+		case 3:
+			digitalWrite(gpio_col[0], HIGH);
+			digitalWrite(gpio_col[1], HIGH);
+			digitalWrite(gpio_col[2], LOW);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+
+		case 4:
+			digitalWrite(gpio_col[0], LOW);
+			digitalWrite(gpio_col[1], LOW);
+			digitalWrite(gpio_col[2], HIGH);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+		case 5:
+			digitalWrite(gpio_col[0], HIGH);
+			digitalWrite(gpio_col[1], LOW);
+			digitalWrite(gpio_col[2], HIGH);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+		case 6:
+			digitalWrite(gpio_col[0], LOW);
+			digitalWrite(gpio_col[1], HIGH);
+			digitalWrite(gpio_col[2], HIGH);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+		case 7:
+			digitalWrite(gpio_col[0], HIGH);
+			digitalWrite(gpio_col[1], HIGH);
+			digitalWrite(gpio_col[2], HIGH);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+		case 8:
+			digitalWrite(gpio_col[0], LOW);
+			digitalWrite(gpio_col[1], LOW);
+			digitalWrite(gpio_col[2], LOW);
+			digitalWrite(gpio_col[3], HIGH);
+			break;
+		case 9:
+			digitalWrite(gpio_col[0], HIGH);
+			digitalWrite(gpio_col[1], LOW);
+			digitalWrite(gpio_col[2], LOW);
+			digitalWrite(gpio_col[3], HIGH);
+			break;
+		default:
+			digitalWrite(gpio_col[0], LOW);
+			digitalWrite(gpio_col[1], LOW);
+			digitalWrite(gpio_col[2], LOW);
+			digitalWrite(gpio_col[3], LOW);
+			break;
+	}
+	printf("[LOG] Columna numero: %d\n", columna);
+	//col[indice-1]=0;
+	//col[indice]=1;
+	timein=millis();
+}
 
 // espera hasta la próxima activación del reloj
 void delay_until (unsigned int next) {
 	unsigned int now = millis();
-
 	if (next > now) {
 		delay (next - now);
     }
 }
 
-//-----------------------------------------------------------------------------------
-// FUNCIONES DE LA MAQUINA DE ESTADOS: Comprueban si se debe cambiar de estado o no
-//-----------------------------------------------------------------------------------
+//------------------------------------------------------------------
+// ARKANOPI FSM: FUNCIONES DE ENTRADA
+//------------------------------------------------------------------
 
 // FUNCIONES DE ENTRADA O COMPROBACIÓN DE LA MAQUINA DE ESTADOS 
 int comprueba_tecla_pulsada(fsm_t* this){
@@ -28,7 +138,6 @@ int comprueba_tecla_pulsada(fsm_t* this){
 	// result vale 1 si en la variable flags se ha marcado FLAG_PELOTA, FLAG_RAQUETA_DERECHA o FLAG_RAQUETA_IZQUIERDA
 	result = (flags & FLAG_PELOTA) || (flags & FLAG_RAQUETA_DERECHA) || (flags & FLAG_RAQUETA_IZQUIERDA);
 	piUnlock (FLAGS_KEY);
-
 	return result;
 }
 
@@ -78,10 +187,9 @@ int comprueba_final_juego (fsm_t* this) {
 	return result;
 }
 
-
-//------------------------------------------------------------------------------------------------------------------------------
-// FUNCIONES SUPPORT: Funciones que ayudan a la coherencia del código, pero que no implementan ninguna funcion final
-//------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------
+// ARKANOPI FSM: FUNCIONES SUPPORT
+//------------------------------------------------------------------
 
 // int ObtenerTipoDeRebote(void): verifica si la proxima casilla causará
 // un rebote y de qué tipo
@@ -191,9 +299,9 @@ void ReboteRaqueta(void){
    	DesplazarPelota();
 }
 
-//-----------------------------------------------------------------------
-// FUNCIONES DE ACCION: Funciones desencadenadas por un cambio de estado
-//-----------------------------------------------------------------------
+//------------------------------------------------------------------
+// ARKANOPI FSM: FUNCIONES DE ACCION
+//------------------------------------------------------------------
 
 // void InicializaJuego (void): funcion encargada de llevar a cabo
 // la oportuna inicialización de toda variable o estructura de datos
@@ -210,7 +318,6 @@ void InicializaJuego (void) {
 	flags &= ~FLAG_PELOTA;
 	flags &= ~FLAG_RAQUETA_DERECHA;
 	flags &= ~FLAG_RAQUETA_IZQUIERDA;
-	flags &= ~FLAG_JOYSTICK;
 	piUnlock (FLAGS_KEY);
 }
 
@@ -239,10 +346,7 @@ void MueveRaquetaIzquierda (void) {
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_KEY);
-	flags &= ~FLAG_PELOTA;
-	flags &= ~FLAG_RAQUETA_DERECHA;
 	flags &= ~FLAG_RAQUETA_IZQUIERDA;
-	flags &= ~FLAG_JOYSTICK;
 	piUnlock (FLAGS_KEY);
 
 }
@@ -267,13 +371,8 @@ void MueveRaquetaDerecha (void) {
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_KEY);
-	flags &= ~FLAG_PELOTA;
 	flags &= ~FLAG_RAQUETA_DERECHA;
-	flags &= ~FLAG_RAQUETA_IZQUIERDA;
-	flags &= ~FLAG_JOYSTICK;
 	piUnlock (FLAGS_KEY);
-
- 
 }
 
 // void MovimientoPelota (void): función encargada de actualizar la
@@ -290,6 +389,7 @@ void MovimientoPelota(void) {
 	piLock (STD_IO_BUFFER_KEY);
 
 	printf("%s\n", "[LOG] MovimientoPelota");
+	printf("Estado: %i\n", juego.estado);
 	// Elegimos lo que se hace segun el tipo de rebote
 	int flag_rebote = ObtenerTipoDeRebote();
 	switch(flag_rebote) {
@@ -316,7 +416,6 @@ void MovimientoPelota(void) {
 	    // Caso en que se choca contra un el limite inferior (pierdes la partida)
 	    case REBOTE_PERDIDA:
 			// Pierdes
-	    	// TODO abstraerlo en una funcion de "rebote"
 	    	piLock (FLAGS_KEY);
 	    	flags |= FLAG_FINAL_JUEGO;
 	    	piUnlock (FLAGS_KEY);
@@ -329,13 +428,8 @@ void MovimientoPelota(void) {
 
 	piLock (FLAGS_KEY);
 	flags &= ~FLAG_PELOTA;
-	flags &= ~FLAG_RAQUETA_DERECHA;
-	flags &= ~FLAG_RAQUETA_IZQUIERDA;
-	flags &= ~FLAG_JOYSTICK;
 	piUnlock (FLAGS_KEY);
-
 }
-
 
 //void ReseteaJuego (void): función encargada de llevar a cabo la
 // reinicialización de cuantas variables o estructuras resulten
@@ -343,18 +437,17 @@ void MovimientoPelota(void) {
 void ReseteaJuego (fsm_t* this) {
 	piLock (STD_IO_BUFFER_KEY);
 	printf("%s\n", "[LOG] ReseteaJuego");
-	this->current_state=WAIT_START;
-	// TODO imprimir la pantalla inicial
+	InicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
+	PintaMensajeInicial((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	printf("%s\n", "PANTALLA INICIAL");
+	PintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_KEY);
 	flags &= ~FLAG_PELOTA;
 	flags &= ~FLAG_RAQUETA_DERECHA;
 	flags &= ~FLAG_RAQUETA_IZQUIERDA;
-	flags &= ~FLAG_JOYSTICK;
 	piUnlock (FLAGS_KEY);
-
 }
 
 // void FinalJuego (void): función encargada de mostrar en la ventana de
@@ -362,10 +455,10 @@ void ReseteaJuego (fsm_t* this) {
 void FinalJuego(void){
 	printf("%s\n", "[LOG] FinalJuego");
 	if(CalculaLadrillosRestantes((tipo_pantalla*)&(juego.arkanoPi.ladrillos)) == 0){
-		// Ganas
+		printf("%s\n", "HAS GANADO");
 	}
 	else{
-		// Pierdes
+		printf("%s\n", "HAS PERDIDO");
 	}
 }
 
@@ -396,10 +489,17 @@ int system_setup (void) {
 	if (wiringPiSetupGpio () < 0) {
 		printf ("Unable to setup wiringPi\n");
 		piUnlock (STD_IO_BUFFER_KEY);
-		return -1;
-    }
+		return -1;    }
 
-	// Lanzamos thread para exploracion del teclado convencional del PC
+	int i=0;
+	for (i=0; i<4; i++){
+		pinMode(gpio_col[i], OUTPUT);
+	}
+	for (i=0; i<7; i++){
+		pinMode(gpio_row[i], OUTPUT);
+		pullUpDnControl (gpio_row[i], PUD_DOWN ); // todas las filas inicialmente a pull down
+	}
+		// Lanzamos thread para exploracion del teclado convencional del PC
 	x = piThreadCreate (thread_explora_teclado);
 
 	if (x != 0) {
@@ -472,6 +572,9 @@ PI_THREAD (thread_explora_teclado) {
 	}
 }
 
+//------------------------------------------------------------------
+// FUNCION PRINCIPAL MAIN
+//------------------------------------------------------------------
 
 int main ()
 {
@@ -485,22 +588,28 @@ int main ()
 		{WAIT_PUSH, comprueba_tecla_pelota, WAIT_PUSH, MovimientoPelota},
 		{WAIT_PUSH, comprueba_tecla_raqueta_izquierda, WAIT_PUSH, MueveRaquetaIzquierda},
 		{WAIT_PUSH, comprueba_tecla_raqueta_derecha, WAIT_PUSH, MueveRaquetaDerecha},
-		{WAIT_PUSH, comprueba_joystick, WAIT_PUSH, ControlJoystick},
+		//{WAIT_PUSH, comprueba_joystick, WAIT_PUSH, ControlJoystick},
 		{WAIT_PUSH, comprueba_final_juego, WAIT_END, FinalJuego},
 		{WAIT_END, comprueba_tecla_pulsada, WAIT_PUSH, ReseteaJuego},
 		{ -1, NULL, -1, NULL }, 
 	};
 
+	fsm_trans_t refresco[] = {
+		{REFRESCO_COL, timer_finished, REFRESCO_COL, col_x },
+		{ -1, NULL, -1, NULL }, };
+
 	fsm_t* arkano_fsm = fsm_new (WAIT_START, arkano_tabla, NULL);
+	fsm_t* refresco_fsm = fsm_new(REFRESCO_COL, refresco, NULL);
 	// Configuracion e inicializacion del sistema
 	fsm_setup (arkano_fsm);
 	system_setup();
 	next = millis();
 	while (1) {
 		fsm_fire (arkano_fsm);
+		fsm_fire (refresco_fsm);
 		next += CLK_MS;
 		delay_until (next);
 	}
-
 	fsm_destroy (arkano_fsm);
+	fsm_destroy (refresco_fsm);
 }
