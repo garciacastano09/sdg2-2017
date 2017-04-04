@@ -1,4 +1,5 @@
 #include "arkanoPiLib.h"
+#include <wiringPi.h>
 
 int ladrillos_basico[MATRIZ_ANCHO][MATRIZ_ALTO] = {
 		{1,1,0,0,0,0,0},
@@ -14,16 +15,16 @@ int ladrillos_basico[MATRIZ_ANCHO][MATRIZ_ALTO] = {
 };
 
 int mensaje_inicial[MATRIZ_ANCHO][MATRIZ_ALTO] = {
+		{0,0,0,0,1,1,1},
+		{1,1,1,0,0,0,1},
+		{0,1,0,0,0,0,1},
+		{1,1,1,0,0,0,0},
+		{0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0},
 		{0,0,0,0,1,1,1},
 		{1,1,1,0,1,1,0},
 		{1,0,1,0,1,1,1},
-		{1,1,1,0,0,0,0},
-		{0,0,0,0,0,0,1},
-		{1,1,1,0,0,0,1},
-		{0,1,0,0,1,1,1},
-		{1,1,1,0,0,0,0},
-		{0,0,0,0,0,0,0},
+		{1,1,1,0,0,0,0}
 };
 
 //------------------------------------------------------
@@ -35,7 +36,9 @@ void ReseteaMatriz(tipo_pantalla *p_pantalla) {
 	int i, j = 0;
 	for(i=0;i<MATRIZ_ANCHO;i++) {
 		for(j=0;j<MATRIZ_ALTO;j++) {
+			piLock(PANTALLA_KEY);
 			p_pantalla->matriz[i][j] = 0;
+			piUnlock(PANTALLA_KEY);
 		}
 	}
 }
@@ -77,7 +80,9 @@ void PintaMensajeInicial(tipo_pantalla *p_pantalla){
 	int i, j = 0;
 	for(i=0;i<MATRIZ_ANCHO;i++) {
 		for(j=0;j<MATRIZ_ALTO;j++) {
+			piLock(PANTALLA_KEY);
 			p_pantalla->matriz[i][j] = mensaje_inicial[i][j];
+			piUnlock(PANTALLA_KEY);
 		}
 	}
 }
@@ -102,20 +107,6 @@ void PintaPantallaPorTerminal  (tipo_pantalla *p_pantalla) {
 	}
 }
 
-void ActivaFilasLed (tipo_pantalla *p_pantalla, int *columna) {
-	printf("%s\n", "[LOG] PintaFilasLed");
-	int i;
-	for(i=0;i<MATRIZ_ALTO;i++) {
-		if(p_pantalla->matriz[i][columna] == 1){
-			digitalWrite(gpio_col[columna], LOW);
-		}
-		else{
-			digitalWrite(gpio_col[columna], HIGH);
-		}
-	}
-}
-
-
 // void PintaLadrillos(...): funcion encargada de “pintar” los ladrillos
 // en sus correspondientes posiciones dentro del área de juego
 void PintaLadrillos(tipo_pantalla *p_ladrillos, tipo_pantalla *p_pantalla) {
@@ -124,7 +115,9 @@ void PintaLadrillos(tipo_pantalla *p_ladrillos, tipo_pantalla *p_pantalla) {
 	for(i=0;i<MATRIZ_ANCHO;i++) {
 		for(j=0;j<MATRIZ_ALTO;j++) {
 			if(p_ladrillos->matriz[i][j] == 1){
+				piLock(PANTALLA_KEY);
 				p_pantalla->matriz[i][j] = 1;
+				piUnlock(PANTALLA_KEY);
 			}
 		}
     }
@@ -134,9 +127,17 @@ void PintaLadrillos(tipo_pantalla *p_ladrillos, tipo_pantalla *p_pantalla) {
 // en su posicion correspondiente dentro del área de juego
 void PintaRaqueta(tipo_raqueta *p_raqueta, tipo_pantalla *p_pantalla) {
 	printf("%s\n", "[LOG] PintaRaqueta");
-	p_pantalla->matriz[p_raqueta->x-1][6] = 1;
-	p_pantalla->matriz[p_raqueta->x+1][6] = 1;
-	p_pantalla->matriz[p_raqueta->x][6] = 1;
+	piLock(PANTALLA_KEY);
+	if(p_raqueta->x-1 >= 0 && p_raqueta->x-1 <= MATRIZ_ANCHO-1){
+		p_pantalla->matriz[p_raqueta->x-1][MATRIZ_ALTO-1] = 1;
+	}
+	if(p_raqueta->x+1 >= 0 && p_raqueta->x+1 <= MATRIZ_ANCHO-1){
+		p_pantalla->matriz[p_raqueta->x+1][MATRIZ_ALTO-1] = 1;
+	}
+	if(p_raqueta->x >= 0 && p_raqueta->x <= MATRIZ_ANCHO-1){
+		p_pantalla->matriz[p_raqueta->x][MATRIZ_ALTO-1] = 1;
+	}
+	piUnlock(PANTALLA_KEY);
 }
 
 // void PintaPelota(...): funcion encargada de “pintar” la pelota
@@ -145,7 +146,9 @@ void PintaPelota(tipo_pelota *p_pelota, tipo_pantalla *p_pantalla) {
 	printf("%s\n", "[LOG] PintaPelota");
 	if( (p_pelota->x >= 0) && (p_pelota->x < MATRIZ_ANCHO) ) {
 		if( (p_pelota->y >= 0) && (p_pelota->y < MATRIZ_ALTO) ) {
+			piLock(PANTALLA_KEY);
 			p_pantalla->matriz[p_pelota->x][p_pelota->y] = 1;
+			piUnlock(PANTALLA_KEY);
 		}
 		else {
 			printf("\n\nPROBLEMAS!!!! posicion y=%d de la pelota INVALIDA!!!\n\n", p_pelota->y);

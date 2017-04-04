@@ -8,7 +8,7 @@
 //------------------------------------------------------------------
 // VARIABLES ESTATICAS
 //------------------------------------------------------------------
-static volatile tipo_juego juego;
+static tipo_juego juego;
 static int gpio_col[4]={GPIO_COL_1,GPIO_COL_2,GPIO_COL_3,GPIO_COL_4};
 static int gpio_row[7]={GPIO_ROW_1,GPIO_ROW_2,GPIO_ROW_3,GPIO_ROW_4,
 		GPIO_ROW_5,GPIO_ROW_6,GPIO_ROW_7};
@@ -21,7 +21,7 @@ static int columna=0;
 //------------------------------------------------------------------
 // VARIABLES VOLATILES
 //------------------------------------------------------------------
-volatile int flags = 0;
+static int flags = 0;
 
 //------------------------------------------------------------------
 // FUNCIONES REFRESCO FSM
@@ -34,7 +34,15 @@ static int timer_finished (fsm_t* this){
 static void col_x(fsm_t* this) {
 	col_counter++;
 	columna = col_counter%10;
-	ActivaFilasLed((tipo_pantalla*)(&(juego.arkanoPi.pantalla)), &(columna))
+	ActivaFilasLed(&(juego.arkanoPi.pantalla),&(columna));
+	/* digitalWrite(gpio_row[0], LOW);
+	digitalWrite(gpio_row[1], LOW);
+	digitalWrite(gpio_row[2], LOW);
+	digitalWrite(gpio_row[3], LOW);
+	digitalWrite(gpio_row[4], LOW);
+	digitalWrite(gpio_row[5], LOW);
+	digitalWrite(gpio_row[6], LOW); */
+
 	switch (columna){
 		case 0:
 			digitalWrite(gpio_col[0], LOW);
@@ -106,10 +114,23 @@ static void col_x(fsm_t* this) {
 			break;
 	}
 
-	printf("[LOG] Columna numero: %d\n", columna);
+	//printf("[LOG] Columna numero: %d\n", columna);
 	//col[indice-1]=0;
 	//col[indice]=1;
 	timein=millis();
+}
+
+void ActivaFilasLed (tipo_pantalla* p_pantalla, int* columna) {
+	// printf("%s\n", "[LOG] PintaFilasLed");
+	int i;
+	for(i=0;i<MATRIZ_ALTO;i++) {
+		if(p_pantalla->matriz[*columna][i] == 1){
+			digitalWrite(gpio_row[i], LOW);
+		}
+		else{
+			digitalWrite(gpio_row[i], HIGH);
+		}
+	}
 }
 
 // espera hasta la próxima activación del reloj
@@ -327,7 +348,7 @@ void MueveRaquetaIzquierda (void) {
 	printf("%s\n", "[LOG] MueveRaquetaIzquierda");
 	// Esto asegura que la raqueta se mantenga en la fila mas baja de la matriz
 	juego.arkanoPi.raqueta.y=MATRIZ_ALTO-1;
-	if(juego.arkanoPi.raqueta.x < MIN_X_RAQUETA+1){
+	if(juego.arkanoPi.raqueta.x < MIN_X_RAQUETA){
 		printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la izquierda imposible");
 	}
 	else{
@@ -352,7 +373,7 @@ void MueveRaquetaDerecha (void) {
 	printf("%s\n", "[LOG] MueveRaquetaDerecha");
 	// Esto asegura que la raqueta se mantenga en la fila mas baja de la matriz
 	juego.arkanoPi.raqueta.y=MATRIZ_ALTO-1;
-	if(juego.arkanoPi.raqueta.x > MAX_X_RAQUETA-1){
+	if(juego.arkanoPi.raqueta.x > MAX_X_RAQUETA){
 		printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la derecha imposible");
 	}
 	else{

@@ -35,7 +35,7 @@
 #define GPIO_ROW_5 4
 #define GPIO_ROW_6 7
 #define GPIO_ROW_7 23
-#define REFRESH_TIME 40 //tiempo de exploración de columnas
+#define REFRESH_TIME 1 //tiempo de exploración de columnas
 
 // A 'key' which we can lock and unlock - values are 0 through 3
 //	This is interpreted internally as a pthread_mutex by wiringPi
@@ -70,6 +70,9 @@ void MovimientoPelota (void);
 // FUNCIONES DE INICIALIZACION
 //------------------------------------------------------
 int systemSetup (void);
+
+
+void ActivaFilasLed (tipo_pantalla* p_pantalla, int* columna);
 
 //------------------------------------------------------
 // FUNCIONES DE ENTRADA O DE TRANSICION DE LA MAQUINA DE ESTADOS

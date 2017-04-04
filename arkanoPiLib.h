@@ -11,14 +11,16 @@
 #define LADRILLOS_ALTO 	2
 #define RAQUETA_ANCHO 		3
 #define RAQUETA_ALTO 		1
-#define MAX_X_RAQUETA 		8
-#define MIN_X_RAQUETA 		1
+#define MAX_X_RAQUETA 		9
+#define MIN_X_RAQUETA 		0
 #define REBOTE_LADRILLO		94
 #define REBOTE_RAQUETA		95
 #define REBOTE_PERDIDA		96
 #define REBOTE_TECHO		97
 #define REBOTE_LATERAL		98
 #define NO_REBOTE			99
+
+#define	PANTALLA_KEY	4
 
 typedef struct {
 	// Posicion
