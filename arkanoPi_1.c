@@ -13,7 +13,8 @@ static int gpio_col[4]={GPIO_COL_1,GPIO_COL_2,GPIO_COL_3,GPIO_COL_4};
 static int gpio_row[7]={GPIO_ROW_1,GPIO_ROW_2,GPIO_ROW_3,GPIO_ROW_4,
 		GPIO_ROW_5,GPIO_ROW_6,GPIO_ROW_7};
 // array de filas
-static int timein=0;
+static int timein_refresco=0;
+static int timein_mov_pelota=0;
 static int col_counter=0;
 static int columna=0;
 
@@ -37,13 +38,16 @@ void PulsaRaqDer(void){
 	piUnlock (FLAGS_KEY);
 }
 
+static int timer_mov_pelota_finished (fsm_t* this){
+	return (millis()-timein_mov_pelota >=MOVIMIENTO_PELOTA_TIME);
+}
+
 //------------------------------------------------------------------
 // FUNCIONES REFRESCO FSM
 //------------------------------------------------------------------
-static int timer_finished (fsm_t* this){
-	return (millis()-timein >=REFRESH_TIME);
+static int timer_refresco_finished (fsm_t* this){
+	return (millis()-timein_refresco >=REFRESH_TIME);
 }
-
 // rutina que se ejecuta cada vez que ha pasado cierto tiempo
 static void col_x(fsm_t* this) {
 	col_counter++;
@@ -120,11 +124,7 @@ static void col_x(fsm_t* this) {
 			digitalWrite(gpio_col[3], LOW);
 			break;
 	}
-
-	//printf("[LOG] Columna numero: %d\n", columna);
-	//col[indice-1]=0;
-	//col[indice]=1;
-	timein=millis();
+	timein_refresco=millis();
 }
 
 void ActivaFilasLed (tipo_pantalla* p_pantalla, int* columna) {
@@ -463,6 +463,8 @@ void MovimientoPelota(void) {
 	piLock (FLAGS_KEY);
 	flags &= ~FLAG_PELOTA;
 	piUnlock (FLAGS_KEY);
+
+	timein_mov_pelota=millis();
 }
 
 //void ReseteaJuego (void): función encargada de llevar a cabo la
@@ -616,9 +618,11 @@ int main ()
 
 	// Maquina de estados: lista de transiciones
 	// {EstadoOrigen,FunciónDeEntrada,EstadoDestino,FunciónDeSalida}
+	// TODO comprobar que funciona el movimiento de la pelota. Hacer parte de rebotes de los pulsadores
 	fsm_trans_t arkano_tabla[] = {
 		{WAIT_START, comprueba_tecla_pulsada, WAIT_PUSH, InicializaJuego},
-		{WAIT_PUSH, comprueba_tecla_pelota, WAIT_PUSH, MovimientoPelota},
+		{WAIT_PUSH, timer_mov_pelota_finished, WAIT_PUSH, MovimientoPelota},
+		//{WAIT_PUSH, comprueba_tecla_pelota, WAIT_PUSH, MovimientoPelota},
 		{WAIT_PUSH, comprueba_tecla_raqueta_izquierda, WAIT_PUSH, MueveRaquetaIzquierda},
 		{WAIT_PUSH, comprueba_tecla_raqueta_derecha, WAIT_PUSH, MueveRaquetaDerecha},
 		//{WAIT_PUSH, comprueba_joystick, WAIT_PUSH, ControlJoystick},
@@ -628,7 +632,7 @@ int main ()
 	};
 
 	fsm_trans_t refresco[] = {
-		{REFRESCO_COL, timer_finished, REFRESCO_COL, col_x },
+		{REFRESCO_COL, timer_refresco_finished, REFRESCO_COL, col_x },
 		{ -1, NULL, -1, NULL }, };
 
 	fsm_t* arkano_fsm = fsm_new (WAIT_START, arkano_tabla, NULL);

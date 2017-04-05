@@ -22,7 +22,6 @@
 #define FLAG_RAQUETA_DERECHA			0x02
 #define FLAG_RAQUETA_IZQUIERDA			0x04
 #define FLAG_FINAL_JUEGO		0x8
-#define FLAG_TIMEOUT_PELOTA		0x16
 
 #define GPIO_COL_1 14
 #define GPIO_COL_2 17
@@ -39,6 +38,7 @@
 #define GPIO_RAQ_DER 27
 
 #define REFRESH_TIME 1 //tiempo de exploración de columnas
+#define MOVIMIENTO_PELOTA_TIME 20 //tiempo de movimiento de pelota
 
 // A 'key' which we can lock and unlock - values are 0 through 3
 //	This is interpreted internally as a pthread_mutex by wiringPi
