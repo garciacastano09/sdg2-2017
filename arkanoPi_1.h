@@ -22,7 +22,7 @@
 #define FLAG_RAQUETA_DERECHA			0x02
 #define FLAG_RAQUETA_IZQUIERDA			0x04
 #define FLAG_FINAL_JUEGO		0x8
-#define FLAG_JOYSTICK		0x16
+#define FLAG_TIMEOUT_PELOTA		0x16
 
 #define GPIO_COL_1 14
 #define GPIO_COL_2 17
@@ -35,6 +35,9 @@
 #define GPIO_ROW_5 4
 #define GPIO_ROW_6 7
 #define GPIO_ROW_7 23
+#define GPIO_RAQ_IZQ 26
+#define GPIO_RAQ_DER 27
+
 #define REFRESH_TIME 1 //tiempo de exploración de columnas
 
 // A 'key' which we can lock and unlock - values are 0 through 3

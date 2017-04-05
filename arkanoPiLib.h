@@ -58,22 +58,22 @@ extern tipo_pantalla pantalla_inicial;
 //------------------------------------------------------
 // FUNCIONES DE INICIALIZACION / RESET
 //------------------------------------------------------
-void ReseteaMatriz(tipo_pantalla *p_pantalla);
-void ReseteaLadrillos(tipo_pantalla *p_ladrillos);
-void ReseteaPelota(tipo_pelota *p_pelota);
-void ReseteaRaqueta(tipo_raqueta *p_raqueta);
+void ReseteaMatriz(tipo_pantalla* p_pantalla);
+void ReseteaLadrillos(tipo_pantalla* p_ladrillos);
+void ReseteaPelota(tipo_pelota* p_pelota);
+void ReseteaRaqueta(tipo_raqueta* p_raqueta);
 
 //------------------------------------------------------
 // FUNCIONES DE VISUALIZACION (ACTUALIZACION DEL OBJETO PANTALLA QUE LUEGO USARA EL DISPLAY)
 //------------------------------------------------------
-void PintaMensajeInicialPantalla (tipo_pantalla *p_pantalla, tipo_pantalla *p_pantalla_inicial);
-void PintaPantallaPorTerminal (tipo_pantalla *p_pantalla);
-void PintaLadrillos(tipo_pantalla *p_ladrillos, tipo_pantalla *p_pantalla);
-void PintaRaqueta(tipo_raqueta *p_raqueta, tipo_pantalla *p_pantalla);
-void PintaPelota(tipo_pelota *p_pelota, tipo_pantalla *p_pantalla);
+void PintaMensajeInicialPantalla (tipo_pantalla* p_pantalla, tipo_pantalla* p_pantalla_inicial);
+void PintaPantallaPorTerminal (tipo_pantalla* p_pantalla);
+void PintaLadrillos(tipo_pantalla* p_ladrillos, tipo_pantalla* p_pantalla);
+void PintaRaqueta(tipo_raqueta* p_raqueta, tipo_pantalla* p_pantalla);
+void PintaPelota(tipo_pelota* p_pelota, tipo_pantalla* p_pantalla);
 void ActualizaPantalla(tipo_arkanoPi* p_arkanoPi);
 
-void InicializaArkanoPi(tipo_arkanoPi *p_arkanoPi);
-int CalculaLadrillosRestantes(tipo_pantalla *p_ladrillos);
+void InicializaArkanoPi(tipo_arkanoPi* p_arkanoPi);
+int CalculaLadrillosRestantes(tipo_pantalla* p_ladrillos);
 
 #endif /* _ARKANOPILIB_H_ */

@@ -13,7 +13,6 @@ static int gpio_col[4]={GPIO_COL_1,GPIO_COL_2,GPIO_COL_3,GPIO_COL_4};
 static int gpio_row[7]={GPIO_ROW_1,GPIO_ROW_2,GPIO_ROW_3,GPIO_ROW_4,
 		GPIO_ROW_5,GPIO_ROW_6,GPIO_ROW_7};
 // array de filas
-static int col[4] = {0,0,0,0};
 static int timein=0;
 static int col_counter=0;
 static int columna=0;
@@ -22,6 +21,21 @@ static int columna=0;
 // VARIABLES VOLATILES
 //------------------------------------------------------------------
 static int flags = 0;
+
+//------------------------------------------------------------------
+// FUNCIONES PULSADORES ANALOGICOS
+//------------------------------------------------------------------
+void PulsaRaqIzq(void){
+	piLock (FLAGS_KEY);
+	flags |= FLAG_RAQUETA_IZQUIERDA;
+	piUnlock (FLAGS_KEY);
+}
+
+void PulsaRaqDer(void){
+	piLock (FLAGS_KEY);
+	flags |= FLAG_RAQUETA_DERECHA;
+	piUnlock (FLAGS_KEY);
+}
 
 //------------------------------------------------------------------
 // FUNCIONES REFRESCO FSM
@@ -35,13 +49,6 @@ static void col_x(fsm_t* this) {
 	col_counter++;
 	columna = col_counter%10;
 	ActivaFilasLed(&(juego.arkanoPi.pantalla),&(columna));
-	/* digitalWrite(gpio_row[0], LOW);
-	digitalWrite(gpio_row[1], LOW);
-	digitalWrite(gpio_row[2], LOW);
-	digitalWrite(gpio_row[3], LOW);
-	digitalWrite(gpio_row[4], LOW);
-	digitalWrite(gpio_row[5], LOW);
-	digitalWrite(gpio_row[6], LOW); */
 
 	switch (columna){
 		case 0:
@@ -201,6 +208,18 @@ int comprueba_final_juego (fsm_t* this) {
 
 	return result;
 }
+
+int comprueba_timeout_pelota (fsm_t* this) {
+	int result;
+
+	piLock (FLAGS_KEY);
+	// result vale 1 si en la variable flags se ha marcado FLAG_FINAL_JUEGO
+	result = (flags & FLAG_TIMEOUT_PELOTA);
+	piUnlock (FLAGS_KEY);
+
+	return result;
+}
+
 
 //------------------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES SUPPORT
@@ -496,16 +515,14 @@ void FinalJuego(void){
 // crear, si fuese necesario, los threads adicionales que pueda requerir el sistema
 int system_setup (void) {
 	int x = 0;
-	
 	piLock (STD_IO_BUFFER_KEY);
 	printf("%s\n", "[LOG] systemSetup");
-
 	// sets up the wiringPi library
 	if (wiringPiSetupGpio () < 0) {
 		printf ("Unable to setup wiringPi\n");
 		piUnlock (STD_IO_BUFFER_KEY);
-		return -1;    }
-
+		return -1;
+	}
 	int i=0;
 	for (i=0; i<4; i++){
 		pinMode(gpio_col[i], OUTPUT);
@@ -514,17 +531,18 @@ int system_setup (void) {
 		pinMode(gpio_row[i], OUTPUT);
 		pullUpDnControl (gpio_row[i], PUD_DOWN ); // todas las filas inicialmente a pull down
 	}
-		// Lanzamos thread para exploracion del teclado convencional del PC
+	pinMode(GPIO_RAQ_IZQ, INPUT);
+	pinMode(GPIO_RAQ_DER, INPUT);
+	wiringPiISR(GPIO_RAQ_IZQ, INT_EDGE_FALLING, PulsaRaqIzq);
+	wiringPiISR(GPIO_RAQ_DER, INT_EDGE_FALLING, PulsaRaqDer);
+	// Lanzamos thread para exploracion del teclado convencional del PC
 	x = piThreadCreate (thread_explora_teclado);
-
 	if (x != 0) {
 		printf ("it didn't start!!!\n");
 		piUnlock (STD_IO_BUFFER_KEY);
 		return -1;
     }
-
 	piUnlock (STD_IO_BUFFER_KEY);
-
 	return 1;
 }
 

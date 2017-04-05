@@ -31,7 +31,7 @@ int mensaje_inicial[MATRIZ_ANCHO][MATRIZ_ALTO] = {
 // FUNCIONES DE INICIALIZACION / RESET
 //------------------------------------------------------
 
-void ReseteaMatriz(tipo_pantalla *p_pantalla) {
+void ReseteaMatriz(tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] ReseteaMatriz");
 	int i, j = 0;
 	for(i=0;i<MATRIZ_ANCHO;i++) {
@@ -43,7 +43,7 @@ void ReseteaMatriz(tipo_pantalla *p_pantalla) {
 	}
 }
 
-void ReseteaLadrillos(tipo_pantalla *p_ladrillos) {
+void ReseteaLadrillos(tipo_pantalla* p_ladrillos) {
 	printf("%s\n", "[LOG] ReseteaLadrillos");
 	int i, j = 0;
 	for(i=0;i<MATRIZ_ANCHO;i++) {
@@ -53,7 +53,7 @@ void ReseteaLadrillos(tipo_pantalla *p_ladrillos) {
 	}
 }
 
-void ReseteaPelota(tipo_pelota *p_pelota) {
+void ReseteaPelota(tipo_pelota* p_pelota) {
 	// Pelota inicialmente en el centro de la pantalla
 	printf("%s\n", "[LOG] ReseteaPelota");
 	p_pelota->x = MATRIZ_ANCHO/2 - 1;
@@ -75,7 +75,7 @@ void ReseteaRaqueta(tipo_raqueta *p_raqueta) {
 	p_raqueta->alto = RAQUETA_ALTO;
 }
 
-void PintaMensajeInicial(tipo_pantalla *p_pantalla){
+void PintaMensajeInicial(tipo_pantalla* p_pantalla){
 	printf("%s\n", "[LOG] RellenaMatriz");
 	int i, j = 0;
 	for(i=0;i<MATRIZ_ANCHO;i++) {
@@ -95,7 +95,7 @@ void PintaMensajeInicial(tipo_pantalla *p_pantalla){
 // terminal o consola. Este método sera fundamental para facilitar
 // la labor de depuración de errores (por ejemplo, en la programación
 // de los diferentes movimientos tanto de la raqueta como de la pelota).
-void PintaPantallaPorTerminal  (tipo_pantalla *p_pantalla) {
+void PintaPantallaPorTerminal  (tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] PintaPantallaPorTerminal");
 	printf("%s\n", "---PANTALLA---");
 	int i, j = 0;
@@ -109,7 +109,7 @@ void PintaPantallaPorTerminal  (tipo_pantalla *p_pantalla) {
 
 // void PintaLadrillos(...): funcion encargada de “pintar” los ladrillos
 // en sus correspondientes posiciones dentro del área de juego
-void PintaLadrillos(tipo_pantalla *p_ladrillos, tipo_pantalla *p_pantalla) {
+void PintaLadrillos(tipo_pantalla* p_ladrillos, tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] PintaLadrillos");
 	int i, j = 0;
 	for(i=0;i<MATRIZ_ANCHO;i++) {
@@ -125,7 +125,7 @@ void PintaLadrillos(tipo_pantalla *p_ladrillos, tipo_pantalla *p_pantalla) {
 
 // void PintaRaqueta(...): funcion encargada de “pintar” la raqueta
 // en su posicion correspondiente dentro del área de juego
-void PintaRaqueta(tipo_raqueta *p_raqueta, tipo_pantalla *p_pantalla) {
+void PintaRaqueta(tipo_raqueta* p_raqueta, tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] PintaRaqueta");
 	piLock(PANTALLA_KEY);
 	if(p_raqueta->x-1 >= 0 && p_raqueta->x-1 <= MATRIZ_ANCHO-1){
@@ -142,7 +142,7 @@ void PintaRaqueta(tipo_raqueta *p_raqueta, tipo_pantalla *p_pantalla) {
 
 // void PintaPelota(...): funcion encargada de “pintar” la pelota
 // en su posicion correspondiente dentro del área de juego
-void PintaPelota(tipo_pelota *p_pelota, tipo_pantalla *p_pantalla) {
+void PintaPelota(tipo_pelota* p_pelota, tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] PintaPelota");
 	if( (p_pelota->x >= 0) && (p_pelota->x < MATRIZ_ANCHO) ) {
 		if( (p_pelota->y >= 0) && (p_pelota->y < MATRIZ_ALTO) ) {
@@ -178,7 +178,7 @@ void ActualizaPantalla(tipo_arkanoPi* p_arkanoPi) {
 // void InicializaArkanoPi(...): metodo encargado de la inicialización
 // de toda variable o estructura de datos especificamente ligada al
 // desarrollo del juego y su visualizacion.
-void InicializaArkanoPi(tipo_arkanoPi *p_arkanoPi) {
+void InicializaArkanoPi(tipo_arkanoPi* p_arkanoPi) {
 	printf("%s\n", "[LOG] InicializaArkanoPi");
 	ReseteaMatriz((tipo_pantalla*)(&(p_arkanoPi->pantalla)));
 	ReseteaLadrillos((tipo_pantalla*)(&(p_arkanoPi->ladrillos)));
@@ -189,7 +189,7 @@ void InicializaArkanoPi(tipo_arkanoPi *p_arkanoPi) {
 // int CalculaLadrillosRestantes(...): función encargada de evaluar
 // el estado de ocupacion del area de juego por los ladrillos y
 // devolver el numero de estos
-int CalculaLadrillosRestantes(tipo_pantalla *p_ladrillos) {
+int CalculaLadrillosRestantes(tipo_pantalla* p_ladrillos) {
 	printf("%s\n", "[LOG] CalculaLadrillosRestantes");
 	int num_ladrillos_restantes = 0;
 	int i, j = 0;
