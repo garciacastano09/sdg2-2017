@@ -17,10 +17,6 @@ static int timein_refresco=0;
 static int timein_mov_pelota=0;
 static int col_counter=0;
 static int columna=0;
-
-//------------------------------------------------------------------
-// VARIABLES VOLATILES
-//------------------------------------------------------------------
 static int flags = 0;
 
 //------------------------------------------------------------------
@@ -38,6 +34,9 @@ void PulsaRaqDer(void){
 	piUnlock (FLAGS_KEY);
 }
 
+//------------------------------------------------------------------
+// FUNCIONES MOVIMIENTO AUTOMATICO PELOTA
+//------------------------------------------------------------------
 static int timer_mov_pelota_finished (fsm_t* this){
 	return (millis()-timein_mov_pelota >=MOVIMIENTO_PELOTA_TIME);
 }
@@ -140,7 +139,7 @@ void ActivaFilasLed (tipo_pantalla* p_pantalla, int* columna) {
 	}
 }
 
-// espera hasta la próxima activación del reloj
+// espera hasta la prï¿½xima activaciï¿½n del reloj
 void delay_until (unsigned int next) {
 	unsigned int now = millis();
 	if (next > now) {
@@ -152,7 +151,7 @@ void delay_until (unsigned int next) {
 // ARKANOPI FSM: FUNCIONES DE ENTRADA
 //------------------------------------------------------------------
 
-// FUNCIONES DE ENTRADA O COMPROBACIÓN DE LA MAQUINA DE ESTADOS 
+// FUNCIONES DE ENTRADA O COMPROBACIï¿½N DE LA MAQUINA DE ESTADOS
 int comprueba_tecla_pulsada(fsm_t* this){
 	int result;
 
@@ -194,10 +193,6 @@ int comprueba_tecla_raqueta_izquierda (fsm_t* this) {
 	return result;
 }
 
-// int comprueba_joystick(fsm_t* this) {
-// 	return 999;
-// }
-
 int comprueba_final_juego (fsm_t* this) {
 	int result;
 
@@ -225,11 +220,11 @@ int comprueba_timeout_pelota (fsm_t* this) {
 // ARKANOPI FSM: FUNCIONES SUPPORT
 //------------------------------------------------------------------
 
-// int ObtenerTipoDeRebote(void): verifica si la proxima casilla causará
-// un rebote y de qué tipo
+// int ObtenerTipoDeRebote(void): verifica si la proxima casilla causarï¿½
+// un rebote y de quï¿½ tipo
 int ObtenerTipoDeRebote(void){
 	printf("%s\n", "[LOG] ObtenerTipoDeRebote");
-	// Calculo de las nuevas coordenadas que tendría la pelota en el próximo movimiento
+	// Calculo de las nuevas coordenadas que tendrï¿½a la pelota en el prï¿½ximo movimiento
 	int nuevo_y = juego.arkanoPi.pelota.y + juego.arkanoPi.pelota.yv;
 	int nuevo_x = juego.arkanoPi.pelota.x + juego.arkanoPi.pelota.xv;
 
@@ -267,7 +262,7 @@ int ObtenerTipoDeRebote(void){
 }
 
 // void DesplazarPelota(void): mueve la posicion de la pelota un pixel
-// según lo definido en la trayectoria. La trayectoria no se cambia.
+// segï¿½n lo definido en la trayectoria. La trayectoria no se cambia.
 void DesplazarPelota(void){
 	printf("%s\n", "[LOG] DesplazarPelota");
 	juego.arkanoPi.pelota.x = juego.arkanoPi.pelota.x + juego.arkanoPi.pelota.xv;
@@ -338,7 +333,7 @@ void ReboteRaqueta(void){
 //------------------------------------------------------------------
 
 // void InicializaJuego (void): funcion encargada de llevar a cabo
-// la oportuna inicialización de toda variable o estructura de datos
+// la oportuna inicializaciï¿½n de toda variable o estructura de datos
 // que resulte necesaria para el desarrollo del juego.
 void InicializaJuego (void) {
 	piLock (STD_IO_BUFFER_KEY);
@@ -357,9 +352,9 @@ void InicializaJuego (void) {
 
 // void MueveRaquetaIzquierda (void): funcion encargada de ejecutar
 // el movimiento hacia la izquierda contemplado para la raqueta.
-// Debe garantizar la viabilidad del mismo mediante la comprobación
-// de que la nueva posición correspondiente a la raqueta no suponga
-// que ésta rebase o exceda los límites definidos para el área de juego
+// Debe garantizar la viabilidad del mismo mediante la comprobaciï¿½n
+// de que la nueva posiciï¿½n correspondiente a la raqueta no suponga
+// que ï¿½sta rebase o exceda los lï¿½mites definidos para el ï¿½rea de juego
 // (i.e. al menos uno de los leds que componen la raqueta debe permanecer
 // visible durante todo el transcurso de la partida).
 void MueveRaquetaIzquierda (void) {
@@ -385,7 +380,7 @@ void MueveRaquetaIzquierda (void) {
 
 }
 
-// void MueveRaquetaDerecha (void): función similar a la anterior
+// void MueveRaquetaDerecha (void): funciï¿½n similar a la anterior
 // encargada del movimiento hacia la derecha.
 void MueveRaquetaDerecha (void) {
 	piLock (STD_IO_BUFFER_KEY);
@@ -409,16 +404,16 @@ void MueveRaquetaDerecha (void) {
 	piUnlock (FLAGS_KEY);
 }
 
-// void MovimientoPelota (void): función encargada de actualizar la
-// posición de la pelota conforme a la trayectoria definida para ésta.
-// Para ello deberá identificar los posibles rebotes de la pelota para,
+// void MovimientoPelota (void): funciï¿½n encargada de actualizar la
+// posiciï¿½n de la pelota conforme a la trayectoria definida para ï¿½sta.
+// Para ello deberï¿½ identificar los posibles rebotes de la pelota para,
 // en ese caso, modificar su correspondiente trayectoria (los rebotes
-// detectados contra alguno de los ladrillos implicarán adicionalmente
-// la eliminación del ladrillo). Del mismo modo, deberá también
-// identificar las situaciones en las que se dé por finalizada la partida:
-// bien porque el jugador no consiga devolver la pelota, y por tanto ésta
-// rebase el límite inferior del área de juego, bien porque se agoten
-// los ladrillos visibles en el área de juego.
+// detectados contra alguno de los ladrillos implicarï¿½n adicionalmente
+// la eliminaciï¿½n del ladrillo). Del mismo modo, deberï¿½ tambiï¿½n
+// identificar las situaciones en las que se dï¿½ por finalizada la partida:
+// bien porque el jugador no consiga devolver la pelota, y por tanto ï¿½sta
+// rebase el lï¿½mite inferior del ï¿½rea de juego, bien porque se agoten
+// los ladrillos visibles en el ï¿½rea de juego.
 void MovimientoPelota(void) {
 	piLock (STD_IO_BUFFER_KEY);
 
@@ -467,8 +462,8 @@ void MovimientoPelota(void) {
 	timein_mov_pelota=millis();
 }
 
-//void ReseteaJuego (void): función encargada de llevar a cabo la
-// reinicialización de cuantas variables o estructuras resulten
+//void ReseteaJuego (void): funciï¿½n encargada de llevar a cabo la
+// reinicializaciï¿½n de cuantas variables o estructuras resulten
 // necesarias para dar comienzo a una nueva partida.
 void ReseteaJuego (fsm_t* this) {
 	piLock (STD_IO_BUFFER_KEY);
@@ -486,7 +481,7 @@ void ReseteaJuego (fsm_t* this) {
 	piUnlock (FLAGS_KEY);
 }
 
-// void FinalJuego (void): función encargada de mostrar en la ventana de
+// void FinalJuego (void): funciï¿½n encargada de mostrar en la ventana de
 // terminal los mensajes necesarios para informar acerca del resultado del juego.
 void FinalJuego(void){
 	printf("%s\n", "[LOG] FinalJuego");
@@ -498,22 +493,15 @@ void FinalJuego(void){
 	}
 }
 
-
-// void ControlJoystick (void){
-// 	return;
-// }
-
-
-
 //------------------------------------------------------
 // FUNCIONES DE INICIALIZACION
 //------------------------------------------------------
 
 // int systemSetup (void): procedimiento de configuracion del sistema.
-// Realizará, entra otras, todas las operaciones necesarias para:
-// configurar el uso de posibles librerías (e.g. Wiring Pi),
+// Realizarï¿½, entra otras, todas las operaciones necesarias para:
+// configurar el uso de posibles librerï¿½as (e.g. Wiring Pi),
 // configurar las interrupciones externas asociadas a los pines GPIO,
-// configurar las interrupciones periódicas y sus correspondientes temporizadores,
+// configurar las interrupciones periï¿½dicas y sus correspondientes temporizadores,
 // crear, si fuese necesario, los threads adicionales que pueda requerir el sistema
 int system_setup (void) {
 	int x = 0;
@@ -568,13 +556,10 @@ PI_THREAD (thread_explora_teclado) {
 
 	while(1) {
 		delay(10); // Wiring Pi function: pauses program execution for at least 10 ms
-
 		piLock (STD_IO_BUFFER_KEY);
-
 		if(kbhit()) {
 			teclaPulsada = kbread();
 			printf("\nTecla %c\n", teclaPulsada);
-
 			switch(teclaPulsada) {
 				case 'i':  // Mover raqueta a la izquierda
 					piLock (FLAGS_KEY);
@@ -597,7 +582,7 @@ PI_THREAD (thread_explora_teclado) {
 				case 'q': // Salir
 					exit(0);
 					break;
-	
+
 				default:
 					printf("INVALID KEY!!!\n");
 					break;
@@ -617,7 +602,7 @@ int main ()
 	unsigned int next;
 
 	// Maquina de estados: lista de transiciones
-	// {EstadoOrigen,FunciónDeEntrada,EstadoDestino,FunciónDeSalida}
+	// {EstadoOrigen,Funciï¿½nDeEntrada,EstadoDestino,Funciï¿½nDeSalida}
 	// TODO comprobar que funciona el movimiento de la pelota. Hacer parte de rebotes de los pulsadores
 	fsm_trans_t arkano_tabla[] = {
 		{WAIT_START, comprueba_tecla_pulsada, WAIT_PUSH, InicializaJuego},
@@ -625,10 +610,9 @@ int main ()
 		//{WAIT_PUSH, comprueba_tecla_pelota, WAIT_PUSH, MovimientoPelota},
 		{WAIT_PUSH, comprueba_tecla_raqueta_izquierda, WAIT_PUSH, MueveRaquetaIzquierda},
 		{WAIT_PUSH, comprueba_tecla_raqueta_derecha, WAIT_PUSH, MueveRaquetaDerecha},
-		//{WAIT_PUSH, comprueba_joystick, WAIT_PUSH, ControlJoystick},
 		{WAIT_PUSH, comprueba_final_juego, WAIT_END, FinalJuego},
 		{WAIT_END, comprueba_tecla_pulsada, WAIT_PUSH, ReseteaJuego},
-		{ -1, NULL, -1, NULL }, 
+		{ -1, NULL, -1, NULL },
 	};
 
 	fsm_trans_t refresco[] = {
