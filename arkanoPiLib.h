@@ -41,7 +41,7 @@ typedef struct {
 } tipo_pelota;
 
 typedef struct {
-	// Matriz de ocupación de las distintas posiciones que conforman el display
+	// Matriz de ocupaciï¿½n de las distintas posiciones que conforman el display
 	// (correspondiente al estado encendido/apagado de cada uno de los leds)
 	int matriz[MATRIZ_ANCHO][MATRIZ_ALTO];
 } tipo_pantalla;

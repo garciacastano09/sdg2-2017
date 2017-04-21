@@ -91,9 +91,9 @@ void PintaMensajeInicial(tipo_pantalla* p_pantalla){
 // FUNCIONES DE VISUALIZACION (ACTUALIZACION DEL OBJETO PANTALLA QUE LUEGO USARA EL DISPLAY)
 //------------------------------------------------------
 // void PintaPantallaPorTerminal (...): metodo encargado de mostrar
-// el contenido o la ocupación de la matriz de leds en la ventana de
-// terminal o consola. Este método sera fundamental para facilitar
-// la labor de depuración de errores (por ejemplo, en la programación
+// el contenido o la ocupaciï¿½n de la matriz de leds en la ventana de
+// terminal o consola. Este mï¿½todo sera fundamental para facilitar
+// la labor de depuraciï¿½n de errores (por ejemplo, en la programaciï¿½n
 // de los diferentes movimientos tanto de la raqueta como de la pelota).
 void PintaPantallaPorTerminal  (tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] PintaPantallaPorTerminal");
@@ -107,8 +107,8 @@ void PintaPantallaPorTerminal  (tipo_pantalla* p_pantalla) {
 	}
 }
 
-// void PintaLadrillos(...): funcion encargada de “pintar” los ladrillos
-// en sus correspondientes posiciones dentro del área de juego
+// void PintaLadrillos(...): funcion encargada de ï¿½pintarï¿½ los ladrillos
+// en sus correspondientes posiciones dentro del ï¿½rea de juego
 void PintaLadrillos(tipo_pantalla* p_ladrillos, tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] PintaLadrillos");
 	int i, j = 0;
@@ -123,8 +123,8 @@ void PintaLadrillos(tipo_pantalla* p_ladrillos, tipo_pantalla* p_pantalla) {
     }
 }
 
-// void PintaRaqueta(...): funcion encargada de “pintar” la raqueta
-// en su posicion correspondiente dentro del área de juego
+// void PintaRaqueta(...): funcion encargada de ï¿½pintarï¿½ la raqueta
+// en su posicion correspondiente dentro del ï¿½rea de juego
 void PintaRaqueta(tipo_raqueta* p_raqueta, tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] PintaRaqueta");
 	piLock(PANTALLA_KEY);
@@ -140,8 +140,8 @@ void PintaRaqueta(tipo_raqueta* p_raqueta, tipo_pantalla* p_pantalla) {
 	piUnlock(PANTALLA_KEY);
 }
 
-// void PintaPelota(...): funcion encargada de “pintar” la pelota
-// en su posicion correspondiente dentro del área de juego
+// void PintaPelota(...): funcion encargada de ï¿½pintarï¿½ la pelota
+// en su posicion correspondiente dentro del ï¿½rea de juego
 void PintaPelota(tipo_pelota* p_pelota, tipo_pantalla* p_pantalla) {
 	printf("%s\n", "[LOG] PintaPelota");
 	if( (p_pelota->x >= 0) && (p_pelota->x < MATRIZ_ANCHO) ) {
@@ -164,7 +164,7 @@ void PintaPelota(tipo_pelota* p_pelota, tipo_pantalla* p_pantalla) {
 // void ActualizaPantalla(...): metodo cuya ejecucion estara ligada a
 // cualquiera de los movimientos de la raqueta o de la pelota y que
 // sera el encargado de actualizar convenientemente la estructura de datos
-// en memoria que representa el área de juego y su correspondiente estado.
+// en memoria que representa el ï¿½rea de juego y su correspondiente estado.
 void ActualizaPantalla(tipo_arkanoPi* p_arkanoPi) {
 	printf("%s\n", "[LOG] ActualizaPantalla");
     // Borro toda la pantalla
@@ -175,7 +175,7 @@ void ActualizaPantalla(tipo_arkanoPi* p_arkanoPi) {
 	PintaLadrillos((tipo_pantalla*)(&(p_arkanoPi->ladrillos)), (tipo_pantalla*)(&(p_arkanoPi->pantalla)));
 }
 
-// void InicializaArkanoPi(...): metodo encargado de la inicialización
+// void InicializaArkanoPi(...): metodo encargado de la inicializaciï¿½n
 // de toda variable o estructura de datos especificamente ligada al
 // desarrollo del juego y su visualizacion.
 void InicializaArkanoPi(tipo_arkanoPi* p_arkanoPi) {
@@ -186,7 +186,7 @@ void InicializaArkanoPi(tipo_arkanoPi* p_arkanoPi) {
 	ReseteaRaqueta((tipo_raqueta*)(&(p_arkanoPi->raqueta)));
 }
 
-// int CalculaLadrillosRestantes(...): función encargada de evaluar
+// int CalculaLadrillosRestantes(...): funciï¿½n encargada de evaluar
 // el estado de ocupacion del area de juego por los ladrillos y
 // devolver el numero de estos
 int CalculaLadrillosRestantes(tipo_pantalla* p_ladrillos) {
