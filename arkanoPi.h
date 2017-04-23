@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-// #include "kbhit.h" // para poder detectar teclas pulsadas sin bloqueo y leer las teclas pulsadas
+#include "kbhit.h" // para poder detectar teclas pulsadas sin bloqueo y leer las teclas pulsadas
 
 #include "arkanoPi.h"
 #include "arkanoPiFSM.h"
@@ -40,17 +40,17 @@
 // A 'key' which we can lock and unlock - values are 0 through 3
 //	This is interpreted internally as a pthread_mutex by wiringPi
 //	which is hiding some of that to make life simple.
-// #define	STD_IO_BUFFER_KEY	1
+#define	STD_IO_BUFFER_KEY	1
 
 //------------------------------------------------------
 // FUNCIONES DE INICIALIZACION
 //------------------------------------------------------
 int systemSetup (void);
-void delay_until (unsigned int next);
+void delayUntil (unsigned int next);
 
 //------------------------------------------------------
 // SUBRUTINAS DE ATENCION A LAS INTERRUPCIONES
 //------------------------------------------------------
-// PI_THREAD (thread_explora_teclado);
+PI_THREAD (thread_explora_teclado);
 
 #endif /* ARKANOPI_H_ */

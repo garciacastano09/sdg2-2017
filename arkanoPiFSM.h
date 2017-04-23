@@ -21,7 +21,7 @@
 //	This is interpreted internally as a pthread_mutex by wiringPi
 //	which is hiding some of that to make life simple.
 #define	FLAGS_ARKANO_KEY	1
-// #define	STD_IO_BUFFER_KEY	2
+#define	STD_IO_BUFFER_KEY	2
 
 typedef enum {
 	WAIT_START=0,
@@ -42,39 +42,39 @@ void arkanoPiFSMSetup(fsm_t* arkano_fsm);
 //------------------------------------------------------------------
 // FUNCIONES SETEO DE FLAGS
 //------------------------------------------------------------------
-void PulsaRaqIzq(void);
-void PulsaRaqDer(void);
-void pelota_tmr_finished(fsm_t* this);
+void pulsaRaqIzq(void);
+void pulsaRaqDer(void);
+void pelotaTmrFinished(fsm_t* this);
 
 //------------------------------------------------------
 // FUNCIONES DE ENTRADA
 //------------------------------------------------------
-int comprueba_tecla_pelota (fsm_t* this);
-int comprueba_tecla_raqueta_derecha (fsm_t* this);
-int comprueba_tecla_raqueta_izquierda (fsm_t* this);
-int comprueba_final_juego (fsm_t* this);
-int comprueba_tecla_pulsada(fsm_t* this);
-int comprueba_timeout_pelota (fsm_t* this);
+int compruebaTeclaPelota (fsm_t* this);
+int compruebaTeclaRaquetaDerecha (fsm_t* this);
+int compruebaTeclaRaquetaIzquierda (fsm_t* this);
+int compruebaFinalJuego (fsm_t* this);
+int compruebaTeclaPulsada(fsm_t* this);
+int compruebaTimeoutPelota (fsm_t* this);
 
 //------------------------------------------------------
 // FUNCIONES DE ACCION
 //------------------------------------------------------
-void InicializaJuego (void);
-void FinalJuego (void);
-void ReseteaJuego (void);
-void MueveRaquetaIzquierda (void);
-void MueveRaquetaDerecha (void);
-void MovimientoPelota (void);
+void inicializaJuego (void);
+void finalJuego (void);
+void reseteaJuego (void);
+void mueveRaquetaIzquierda (void);
+void mueveRaquetaDerecha (void);
+void movimientoPelota (void);
 
 //------------------------------------------------------------------
 // FUNCIONES SUPPORT
 //------------------------------------------------------------------
-int ObtenerTipoDeRebote(void);
-void DesplazarPelota(void);
-void ReboteLadrillo(void);
-void ReboteTecho(void);
-void ReboteLateral(void);
-void ReboteRaqueta(void);
+int obtenerTipoDeRebote(void);
+void desplazarPelota(void);
+void reboteLadrillo(void);
+void reboteTecho(void);
+void reboteLateral(void);
+void reboteRaqueta(void);
 
 
 #endif /* ARKANOPIFSM_H_ */

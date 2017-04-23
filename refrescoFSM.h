@@ -11,7 +11,7 @@
 #define REFRESCO_TIMEOUT 1 //tiempo de exploraci�n de columnas
 
 #define	FLAGS_REFRESCO_KEY	1
-// #define	STD_IO_BUFFER_KEY	2
+#define	STD_IO_BUFFER_KEY	2
 
 //------------------------------------------------------------------
 // FUNCIONES SETUP
@@ -21,16 +21,21 @@ void refrescoFSMSetup(fsm_t* refresco_fsm);
 //------------------------------------------------------------------
 // FUNCIONES SETEO DE FLAGS
 //------------------------------------------------------------------
-void refresco_tmr_finished(fsm_t* this);
+void refrescoTmrFinished(fsm_t* this);
 
 //------------------------------------------------------------------
 // FUNCION DE ENTRADA
 //------------------------------------------------------------------
-int comprueba_timeout_refresco(fsm_t* this);
+int compruebaTimeoutRefresco(fsm_t* this);
 
 //------------------------------------------------------------------
 // FUNCION DE ACCION
 //------------------------------------------------------------------
-static void refrescar_leds(fsm_t* this);
+static void refrescarLeds(fsm_t* this);
+
+//------------------------------------------------------------------
+// FUNCION DE SUPPORT
+//------------------------------------------------------------------
+void activaFilasLed (tipo_pantalla* p_pantalla, int* columna);
 
 #endif

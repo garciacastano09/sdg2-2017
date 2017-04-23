@@ -9,21 +9,25 @@
 //------------------------------------------------------------------
 // VARIABLES ESTATICAS
 //------------------------------------------------------------------
-static int flagsRefrescoFSM = 0;
+static int flags_refresco_FSM = 0;
 static int col_counter=0;
 static int columna=0;
 
 //------------------------------------------------------------------
 // FUNCIONES SETUP
 //------------------------------------------------------------------
-void refrescoFSMSetup(fsm_t* refresco_fsm);
+void refrescoFSMSetup(fsm_t* refresco_fsm){
+    piLock (FLAGS_REFRESCO_KEY);
+    flags_refresco_FSM = 0;
+    piUnlock (FLAGS_REFRESCO_KEY);
+}
 
 //------------------------------------------------------------------
 // FUNCIONES SETEO DE FLAGS
 //------------------------------------------------------------------
-void refresco_tmr_finished(fsm_t* this){
+void refrescoTmrFinished(fsm_t* this){
     piLock (FLAGS_REFRESCO_KEY);
-    flags |= REFRESCO_TIMEOUT;
+    flags_refresco_FSM |= REFRESCO_TIMEOUT;
     piUnlock (FLAGS_REFRESCO_KEY);
     tmr_startms((tmr_t*)(this->user_data), REFRESCO_TIMEOUT);
 }
@@ -31,10 +35,10 @@ void refresco_tmr_finished(fsm_t* this){
 //------------------------------------------------------------------
 // FUNCION DE ENTRADA
 //------------------------------------------------------------------
-int comprueba_timeout_refresco(fsm_t* this){
+int compruebaTimeoutRefresco(fsm_t* this){
     int result;
     piLock (FLAGS_REFRESCO_KEY);
-    result = (flags & FLAG_TIMEOUT_REFRESCO);
+    result = (flags_refresco_FSM & FLAG_TIMEOUT_REFRESCO);
     piUnlock (FLAGS_REFRESCO_KEY);
     return result;
 }
@@ -42,9 +46,9 @@ int comprueba_timeout_refresco(fsm_t* this){
 //------------------------------------------------------------------
 // FUNCION DE ACCION
 //------------------------------------------------------------------
-static void refrescar_leds(fsm_t* this){
-    col_counter++;
-    columna = col_counter%10;
+static void refrescarLeds(fsm_t* this){
+    colCounter++;
+    columna = colCounter%10;
     ActivaFilasLed(&(juego.arkanoPi.pantalla),&(columna));
     switch (columna){
         case 0:
@@ -117,15 +121,15 @@ static void refrescar_leds(fsm_t* this){
             break;
     }
     piLock (FLAGS_REFRESCO_KEY);
-    flags &= (~FLAG_TIMEOUT_REFRESCO);
+    flags_refresco_FSM &= (~FLAG_TIMEOUT_REFRESCO);
     piUnlock (FLAGS_REFRESCO_KEY);
 }
 
 //------------------------------------------------------------------
 // FUNCION DE SUPPORT
 //------------------------------------------------------------------
-void ActivaFilasLed (tipo_pantalla* p_pantalla, int* columna){
-    // printf("%s\n", "[LOG] PintaFilasLed");
+void activaFilasLed (tipo_pantalla* p_pantalla, int* columna){
+    printf("%s\n", "[LOG] PintaFilasLed");
     int i;
     for(i=0;i<MATRIZ_ALTO;i++) {
         if(p_pantalla->matriz[*columna][i] == 1){

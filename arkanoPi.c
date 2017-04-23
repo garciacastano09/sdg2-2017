@@ -15,9 +15,8 @@ static int gpio_col[4]={GPIO_COL_1,GPIO_COL_2,GPIO_COL_3,GPIO_COL_4};
 static int gpio_row[7]={GPIO_ROW_1,GPIO_ROW_2,GPIO_ROW_3,GPIO_ROW_4,
 		GPIO_ROW_5,GPIO_ROW_6,GPIO_ROW_7};
 
-void delay_until (unsigned int next) {
+void delayUntil (unsigned int next) {
 	// espera hasta la pr�xima activaci�n del reloj
-
 	unsigned int now = millis();
 	if (next > now) {
 		delay (next - now);
@@ -27,7 +26,7 @@ void delay_until (unsigned int next) {
 //------------------------------------------------------
 // FUNCIONES DE INICIALIZACION
 //------------------------------------------------------
-int system_setup (void) {
+int systemSetup (void) {
 	// int systemSetup (void): procedimiento de configuracion del sistema.
 	// Realizar�, entra otras, todas las operaciones necesarias para:
 	// configurar el uso de posibles librer�as (e.g. Wiring Pi),
@@ -36,8 +35,8 @@ int system_setup (void) {
 	// crear, si fuese necesario, los threads adicionales que pueda requerir el sistema
 
 	int x = 0;
-	// piLock (STD_IO_BUFFER_KEY);
-	// printf("%s\n", "[LOG] systemSetup");
+	piLock (STD_IO_BUFFER_KEY);
+	printf("%s\n", "[LOG] systemSetup");
 	// sets up the wiringPi library
 	if (wiringPiSetupGpio () < 0) {
 		printf ("Unable to setup wiringPi\n");
@@ -57,13 +56,13 @@ int system_setup (void) {
 	wiringPiISR(GPIO_RAQ_IZQ, INT_EDGE_FALLING, PulsaRaqIzq);
 	wiringPiISR(GPIO_RAQ_DER, INT_EDGE_FALLING, PulsaRaqDer);
 	// Lanzamos thread para exploracion del teclado convencional del PC
-	// x = piThreadCreate (thread_explora_teclado);
-	// if (x != 0) {
-	// 	printf ("it didn't start!!!\n");
-	// 	piUnlock (STD_IO_BUFFER_KEY);
-	// 	return -1;
-    // }
-	// piUnlock (STD_IO_BUFFER_KEY);
+	x = piThreadCreate (thread_explora_teclado);
+	if (x != 0) {
+		printf ("it didn't start!!!\n");
+		piUnlock (STD_IO_BUFFER_KEY);
+		return -1;
+    }
+	piUnlock (STD_IO_BUFFER_KEY);
 	return 1;
 }
 
@@ -71,46 +70,40 @@ int system_setup (void) {
 //------------------------------------------------------
 // PI_THREAD (thread_explora_teclado): Thread function for keystrokes detection and interpretation
 //------------------------------------------------------
-// PI_THREAD (thread_explora_teclado) {
-// 	int teclaPulsada;
-//
-// 	while(1) {
-// 		delay(10); // Wiring Pi function: pauses program execution for at least 10 ms
-// 		piLock (STD_IO_BUFFER_KEY);
-// 		if(kbhit()) {
-// 			teclaPulsada = kbread();
-// 			printf("\nTecla %c\n", teclaPulsada);
-// 			switch(teclaPulsada) {
-// 				case 'i':  // Mover raqueta a la izquierda
-// 					piLock (FLAGS_KEY);
-// 					flags |= FLAG_RAQUETA_IZQUIERDA;
-// 					piUnlock (FLAGS_KEY);
-// 					break;
-//
-// 				case 'o':  // Mover Raqueta a la derecha
-// 					piLock (FLAGS_KEY);
-// 					flags |= FLAG_RAQUETA_DERECHA;
-// 					piUnlock (FLAGS_KEY);
-// 					break;
-//
-// 				case 'p':  // Mover Raqueta a la derecha
-// 					piLock (FLAGS_KEY);
-// 					flags |= FLAG_PELOTA;
-// 					piUnlock (FLAGS_KEY);
-// 					break;
-//
-// 				case 'q': // Salir
-// 					exit(0);
-// 					break;
-//
-// 				default:
-// 					printf("INVALID KEY!!!\n");
-// 					break;
-// 			}
-// 		}
-// 		piUnlock (STD_IO_BUFFER_KEY);
-// 	}
-// }
+PI_THREAD (thread_explora_teclado) {
+	int tecla_pulsada;
+
+	while(1) {
+		delay(10); // Wiring Pi function: pauses program execution for at least 10 ms
+		piLock (STD_IO_BUFFER_KEY);
+		if(kbhit()) {
+			tecla_pulsada = kbread();
+			printf("\nTecla %c\n", tecla_pulsada);
+			switch(tecla_pulsada) {
+				case 'i':  // Mover raqueta a la izquierda
+					pulsaRaqIzq();
+					break;
+
+				case 'o':  // Mover Raqueta a la derecha
+					pulsaRaqDer();
+					break;
+
+				case 'p':  // Mover Raqueta a la derecha
+					pelotaTmrFinished();
+					break;
+
+				case 'q': // Salir
+					exit(0);
+					break;
+
+				default:
+					printf("INVALID KEY!!!\n");
+					break;
+			}
+		}
+		piUnlock (STD_IO_BUFFER_KEY);
+	}
+}
 
 //------------------------------------------------------------------
 // FUNCION PRINCIPAL MAIN
@@ -128,7 +121,7 @@ int main ()
 	fsm_trans_t arkano_tabla[] = {
 		{WAIT_START, comprueba_tecla_pulsada, WAIT_PUSH, InicializaJuego},
 		// {WAIT_PUSH, timer_mov_pelota_finished, WAIT_PUSH, MovimientoPelota},
-		//{WAIT_PUSH, comprueba_tecla_pelota, WAIT_PUSH, MovimientoPelota},
+		{WAIT_PUSH, comprueba_tecla_pelota, WAIT_PUSH, MovimientoPelota},
 		{WAIT_PUSH, comprueba_tecla_raqueta_izquierda, WAIT_PUSH, MueveRaquetaIzquierda},
 		{WAIT_PUSH, comprueba_tecla_raqueta_derecha, WAIT_PUSH, MueveRaquetaDerecha},
 		{WAIT_PUSH, comprueba_final_juego, WAIT_END, FinalJuego},
@@ -146,7 +139,7 @@ int main ()
 	// Configuracion e inicializacion del sistema
 	arkanoPiFSMSetup (arkano_fsm);
 	refrescoFSMSetup (arkano_fsm);
-	system_setup();
+	systemSetup();
 
 	// COMIENZO TEMPORIZADORES
 	next = millis();
