@@ -41,15 +41,111 @@
 //	This is interpreted internally as a pthread_mutex by wiringPi
 //	which is hiding some of that to make life simple.
 #define	STD_IO_BUFFER_KEY	1
+#define	FLAGS_ARKANO_KEY	2
+#define	FLAGS_REFRESCO_KEY	3
+
+// FLAGS DE LA FSM
+#define FLAG_PELOTA			0x01
+#define FLAG_RAQUETA_DERECHA			0x02
+#define FLAG_RAQUETA_IZQUIERDA			0x04
+#define FLAG_FINAL_JUEGO		0x8
+#define FLAG_TIMEOUT_PELOTA		0x16
+#define FLAG_TIMEOUT_REFRESCO		0x32
+
+#define DEBOUNCE_TIME  5
+#define PELOTA_TIMEOUT 500 //tiempo de movimiento de pelota
+#define REFRESCO_TIMEOUT 1 //tiempo de exploraci�n de columnas
+
+// A 'key' which we can lock and unlock - values are 0 through 3
+//	This is interpreted internally as a pthread_mutex by wiringPi
+//	which is hiding some of that to make life simple.
+
+//------------------------------------------------------------------
+// REFRESCO FSM: FUNCIONES SETUP
+//------------------------------------------------------------------
+void refrescoFSMSetup(fsm_t* refresco_fsm);
+
+//------------------------------------------------------------------
+// REFRESCO FSM: FUNCIONES SETEO DE FLAGS
+//------------------------------------------------------------------
+void refrescoTmrFinished(fsm_t* this);
+
+//------------------------------------------------------------------
+// REFRESCO FSM: FUNCION DE ENTRADA
+//------------------------------------------------------------------
+int compruebaTimeoutRefresco(fsm_t* this);
+
+//------------------------------------------------------------------
+// REFRESCO FSM: FUNCION DE ACCION
+//------------------------------------------------------------------
+static void refrescarLeds(fsm_t* this);
+
+//------------------------------------------------------------------
+// REFRESCO FSM:FUNCION DE SUPPORT
+//------------------------------------------------------------------
+void activaFilasLed (tipo_pantalla* p_pantalla, int* columna);
+
+typedef enum {
+	WAIT_START=0,
+	WAIT_PUSH=1,
+	WAIT_END=2} tipo_estados_juego;
+
+typedef struct {
+	tipo_arkanoPi arkanoPi;
+	tipo_estados_juego estado;
+	char teclaPulsada;
+} tipo_juego;
+
+//------------------------------------------------------------------
+// ARKANOPI FSM: FUNCIONES SETUP
+//------------------------------------------------------------------
+void arkanoPiFSMSetup(fsm_t* arkano_fsm);
+
+//------------------------------------------------------------------
+// ARKANOPI FSM: FUNCIONES SETEO DE FLAGS
+//------------------------------------------------------------------
+void pulsaRaqIzq(void);
+void pulsaRaqDer(void);
+void pelotaTmrFinished(fsm_t* this);
 
 //------------------------------------------------------
-// FUNCIONES DE INICIALIZACION
+// ARKANOPI FSM: FUNCIONES DE ENTRADA
+//------------------------------------------------------
+int compruebaTeclaPelota (fsm_t* this);
+int compruebaTeclaRaquetaDerecha (fsm_t* this);
+int compruebaTeclaRaquetaIzquierda (fsm_t* this);
+int compruebaFinalJuego (fsm_t* this);
+int compruebaTeclaPulsada(fsm_t* this);
+int compruebaTimeoutPelota (fsm_t* this);
+
+//------------------------------------------------------
+// ARKANOPI FSM: FUNCIONES DE ACCION
+//------------------------------------------------------
+void inicializaJuego (void);
+void finalJuego (void);
+void reseteaJuego (void);
+void mueveRaquetaIzquierda (void);
+void mueveRaquetaDerecha (void);
+void movimientoPelota (void);
+
+//------------------------------------------------------------------
+// ARKANOPI FSM: FUNCIONES SUPPORT
+//------------------------------------------------------------------
+int obtenerTipoDeRebote(void);
+void desplazarPelota(void);
+void reboteLadrillo(void);
+void reboteTecho(void);
+void reboteLateral(void);
+void reboteRaqueta(void);
+
+//------------------------------------------------------
+// ARKANO PI: FUNCIONES DE INICIALIZACION
 //------------------------------------------------------
 int systemSetup (void);
 void delayUntil (unsigned int next);
 
 //------------------------------------------------------
-// SUBRUTINAS DE ATENCION A LAS INTERRUPCIONES
+// ARKANO PI: SUBRUTINAS DE ATENCION A LAS INTERRUPCIONES
 //------------------------------------------------------
 PI_THREAD (thread_explora_teclado);
 
