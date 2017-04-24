@@ -66,7 +66,7 @@ void reseteaRaqueta(tipo_raqueta* p_raqueta);
 //------------------------------------------------------
 // FUNCIONES DE VISUALIZACION (ACTUALIZACION DEL OBJETO PANTALLA QUE LUEGO USARA EL DISPLAY)
 //------------------------------------------------------
-void pintaMensajeInicialPantalla (tipo_pantalla* p_pantalla, tipo_pantalla* p_pantalla_inicial);
+void pintaMensajeInicial(tipo_pantalla* p_pantalla);
 void pintaPantallaPorTerminal (tipo_pantalla* p_pantalla);
 void pintaLadrillos(tipo_pantalla* p_ladrillos, tipo_pantalla* p_pantalla);
 void pintaRaqueta(tipo_raqueta* p_raqueta, tipo_pantalla* p_pantalla);

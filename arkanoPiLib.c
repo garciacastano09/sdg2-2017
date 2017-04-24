@@ -1,5 +1,5 @@
 #include "arkanoPiLib.h"
-#include <wiringPi.h>
+#include "arkanoPi.h"
 
 int ladrillos_basico[MATRIZ_ANCHO][MATRIZ_ALTO] = {
 		{1,1,0,0,0,0,0},

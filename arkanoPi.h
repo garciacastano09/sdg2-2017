@@ -10,11 +10,10 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-#include "kbhit.h" // para poder detectar teclas pulsadas sin bloqueo y leer las teclas pulsadas
+// #include "kbhit.h" // para poder detectar teclas pulsadas sin bloqueo y leer las teclas pulsadas
 
 #include "arkanoPi.h"
-#include "arkanoPiFSM.h"
-#include "refrescoFSM.h"
+#include "arkanoPiLib.h"
 #include <wiringPi.h>
 #include "fsm.h"
 #include "tmr.h"
@@ -42,15 +41,12 @@
 //	which is hiding some of that to make life simple.
 #define	STD_IO_BUFFER_KEY	1
 #define	FLAGS_ARKANO_KEY	2
-#define	FLAGS_REFRESCO_KEY	3
 
 // FLAGS DE LA FSM
 #define FLAG_PELOTA			0x01
 #define FLAG_RAQUETA_DERECHA			0x02
 #define FLAG_RAQUETA_IZQUIERDA			0x04
 #define FLAG_FINAL_JUEGO		0x8
-#define FLAG_TIMEOUT_PELOTA		0x16
-#define FLAG_TIMEOUT_REFRESCO		0x32
 
 #define DEBOUNCE_TIME  5
 #define PELOTA_TIMEOUT 500 //tiempo de movimiento de pelota
@@ -61,28 +57,10 @@
 //	which is hiding some of that to make life simple.
 
 //------------------------------------------------------------------
-// REFRESCO FSM: FUNCIONES SETUP
+// REFRESCO DE LEDS
 //------------------------------------------------------------------
-void refrescoFSMSetup(fsm_t* refresco_fsm);
+static void refrescarLeds(tmr_t* this);
 
-//------------------------------------------------------------------
-// REFRESCO FSM: FUNCIONES SETEO DE FLAGS
-//------------------------------------------------------------------
-void refrescoTmrFinished(fsm_t* this);
-
-//------------------------------------------------------------------
-// REFRESCO FSM: FUNCION DE ENTRADA
-//------------------------------------------------------------------
-int compruebaTimeoutRefresco(fsm_t* this);
-
-//------------------------------------------------------------------
-// REFRESCO FSM: FUNCION DE ACCION
-//------------------------------------------------------------------
-static void refrescarLeds(fsm_t* this);
-
-//------------------------------------------------------------------
-// REFRESCO FSM:FUNCION DE SUPPORT
-//------------------------------------------------------------------
 void activaFilasLed (tipo_pantalla* p_pantalla, int* columna);
 
 typedef enum {
@@ -106,7 +84,7 @@ void arkanoPiFSMSetup(fsm_t* arkano_fsm);
 //------------------------------------------------------------------
 void pulsaRaqIzq(void);
 void pulsaRaqDer(void);
-void pelotaTmrFinished(fsm_t* this);
+void pelotaTmrFinished(tmr_t* this);
 
 //------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES DE ENTRADA
@@ -121,12 +99,12 @@ int compruebaTimeoutPelota (fsm_t* this);
 //------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES DE ACCION
 //------------------------------------------------------
-void inicializaJuego (void);
-void finalJuego (void);
-void reseteaJuego (void);
-void mueveRaquetaIzquierda (void);
-void mueveRaquetaDerecha (void);
-void movimientoPelota (void);
+void inicializaJuego (fsm_t* this);
+void finalJuego (fsm_t* this);
+void reseteaJuego (fsm_t* this);
+void mueveRaquetaIzquierda (fsm_t* this);
+void mueveRaquetaDerecha (fsm_t* this);
+void movimientoPelota (fsm_t* this);
 
 //------------------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES SUPPORT

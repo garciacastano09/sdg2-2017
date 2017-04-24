@@ -1,9 +1,7 @@
 //------------------------------------------------------------------
 // IMPORTS
 //------------------------------------------------------------------
-#include "arkanoPi.h"
-#include "arkanoPiFSM.h"
-#include "refrescoFSM.h"
+#include "arkanoPi_1.h"
 #include <wiringPi.h>
 #include "fsm.h"
 #include "tmr.h"
@@ -19,47 +17,17 @@ static int flags_arkano_FSM = 0;
 static tipo_juego juego;
 static int debounce_time=0;
 
-static int flags_refresco_FSM = 0;
 static int col_counter=0;
 static int columna=0;
 
-//------------------------------------------------------------------
-// REFRESCO FSM: FUNCIONES SETUP
-//------------------------------------------------------------------
-void refrescoFSMSetup(fsm_t* refresco_fsm){
-    piLock (FLAGS_REFRESCO_KEY);
-    flags_refresco_FSM = 0;
-    piUnlock (FLAGS_REFRESCO_KEY);
-}
 
 //------------------------------------------------------------------
-// REFRESCO FSM: FUNCIONES SETEO DE FLAGS
+// REFRESCO DE LEDS
 //------------------------------------------------------------------
-void refrescoTmrFinished(fsm_t* this){
-    piLock (FLAGS_REFRESCO_KEY);
-    flags_refresco_FSM |= REFRESCO_TIMEOUT;
-    piUnlock (FLAGS_REFRESCO_KEY);
-    tmr_startms((tmr_t*)(this->user_data), REFRESCO_TIMEOUT);
-}
-
-//------------------------------------------------------------------
-// REFRESCO FSM: FUNCION DE ENTRADA
-//------------------------------------------------------------------
-int compruebaTimeoutRefresco(fsm_t* this){
-    int result;
-    piLock (FLAGS_REFRESCO_KEY);
-    result = (flags_refresco_FSM & FLAG_TIMEOUT_REFRESCO);
-    piUnlock (FLAGS_REFRESCO_KEY);
-    return result;
-}
-
-//------------------------------------------------------------------
-// REFRESCO FSM: FUNCION DE ACCION
-//------------------------------------------------------------------
-static void refrescarLeds(fsm_t* this){
-    colCounter++;
-    columna = colCounter%10;
-    ActivaFilasLed(&(juego.arkanoPi.pantalla),&(columna));
+static void refrescarLeds(tmr_t* this){
+    col_counter++;
+    columna = col_counter%10;
+    activaFilasLed(&(juego.arkanoPi.pantalla),&(columna));
     switch (columna){
         case 0:
             digitalWrite(gpio_col[0], LOW);
@@ -130,14 +98,9 @@ static void refrescarLeds(fsm_t* this){
             digitalWrite(gpio_col[3], LOW);
             break;
     }
-    piLock (FLAGS_REFRESCO_KEY);
-    flags_refresco_FSM &= (~FLAG_TIMEOUT_REFRESCO);
-    piUnlock (FLAGS_REFRESCO_KEY);
+	tmr_startms((tmr_t*)this, REFRESCO_TIMEOUT);
 }
 
-//------------------------------------------------------------------
-// REFRESCO FSM: FUNCION DE SUPPORT
-//------------------------------------------------------------------
 void activaFilasLed (tipo_pantalla* p_pantalla, int* columna){
     printf("%s\n", "[LOG] PintaFilasLed");
     int i;
@@ -158,7 +121,7 @@ void arkanoPiFSMSetup(fsm_t* arkano_fsm) {
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM = 0;
 	piUnlock (FLAGS_ARKANO_KEY);
-	ReseteaJuego(arkano_fsm);
+	reseteaJuego(arkano_fsm);
 
 	piLock (STD_IO_BUFFER_KEY);
 	printf("\nPULSE P para mover la pelota, I para moverse a la izquierda y O para moverse a la derecha.\n");
@@ -169,40 +132,42 @@ void arkanoPiFSMSetup(fsm_t* arkano_fsm) {
 // ARKANOPI FSM: SETEO DE FLAGS
 //------------------------------------------------------------------
 void pulsaRaqIzq(void){
-	if(millis() < debounce_time){
-		debounce_time = millis() + DEBOUNCE_TIME;
-		return;
-	}
+	// if(millis() < debounce_time){
+	// 	debounce_time = millis() + DEBOUNCE_TIME;
+	// 	return;
+	// }
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM |= FLAG_RAQUETA_IZQUIERDA;
 	piUnlock (FLAGS_ARKANO_KEY);
 
-	while(digitalRead(GPIO_RAQ_IZQ) == HIGH){
-		delay(1);
-	}
-	debounce_time = millis() + DEBOUNCE_TIME;
+	// while(digitalRead(GPIO_RAQ_IZQ) == HIGH){
+	// 	delay(1);
+	// }
+	// debounce_time = millis() + DEBOUNCE_TIME;
 }
 
 void pulsaRaqDer(void){
-	if(millis() < debounce_time){
-		debounce_time = millis() + DEBOUNCE_TIME;
-		return;
-	}
+	// if(millis() < debounce_time){
+	// 	debounce_time = millis() + DEBOUNCE_TIME;
+	// 	return;
+	// }
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM |= FLAG_RAQUETA_DERECHA;
 	piUnlock (FLAGS_ARKANO_KEY);
 
-	while(digitalRead(GPIO_RAQ_DER) == HIGH){
-		delay(1);
-	}
-	debounce_time = millis() + DEBOUNCE_TIME;
+	// while(digitalRead(GPIO_RAQ_DER) == HIGH){
+	// 	delay(1);
+	// }
+	// debounce_time = millis() + DEBOUNCE_TIME;
 
 }
 
-void pelotaTmrFinished(fsm_t* this){
+void pelotaTmrFinished(tmr_t* this){
 	piLock (FLAGS_ARKANO_KEY);
-	flags_arkano_FSM |= PELOTA_TIMEOUT;
+	flags_arkano_FSM |= FLAG_TIMEOUT_PELOTA;
 	piUnlock (FLAGS_ARKANO_KEY);
+
+	tmr_startms((tmr_t*)this, PELOTA_TIMEOUT);
 }
 
 //------------------------------------------------------------------
@@ -213,15 +178,6 @@ int compruebaTeclaPulsada(fsm_t* this){
 	piLock (FLAGS_ARKANO_KEY);
 	// result vale 1 si en la variable flags_arkano_FSM se ha marcado FLAG_PELOTA, FLAG_RAQUETA_DERECHA o FLAG_RAQUETA_IZQUIERDA
 	result = (flags_arkano_FSM & FLAG_PELOTA) || (flags_arkano_FSM & FLAG_RAQUETA_DERECHA) || (flags_arkano_FSM & FLAG_RAQUETA_IZQUIERDA);
-	piUnlock (FLAGS_ARKANO_KEY);
-	return result;
-}
-
-int compruebaTeclaPelota (fsm_t* this) {
-	int result;
-	piLock (FLAGS_ARKANO_KEY);
-	// result vale 1 si en la variable flags_arkano_FSM se ha marcado FLAG_PELOTA
-	result = (flags_arkano_FSM & FLAG_PELOTA);
 	piUnlock (FLAGS_ARKANO_KEY);
 	return result;
 }
@@ -253,11 +209,11 @@ int compruebaFinalJuego (fsm_t* this) {
 	return result;
 }
 
-int comprueba_timeout_pelota (fsm_t* this) {
+int compruebaTimeoutPelota (fsm_t* this) {
 	int result;
 	piLock (FLAGS_ARKANO_KEY);
 	// result vale 1 si en la variable flags_arkano_FSM se ha marcado FLAG_FINAL_JUEGO
-	result = (flags_arkano_FSM & FLAG_TIMEOUT_PELOTA);
+	result = (flags_arkano_FSM & FLAG_PELOTA);
 	piUnlock (FLAGS_ARKANO_KEY);
 	return result;
 }
@@ -265,16 +221,16 @@ int comprueba_timeout_pelota (fsm_t* this) {
 //------------------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES DE ACCION
 //------------------------------------------------------------------
-void inicializaJuego (void) {
+void inicializaJuego (fsm_t* this) {
     // void InicializaJuego (void): funcion encargada de llevar a cabo
     // la oportuna inicializaci�n de toda variable o estructura de datos
     // que resulte necesaria para el desarrollo del juego.
 
 	piLock (STD_IO_BUFFER_KEY);
 	printf("%s\n", "[LOG] InicializaJuego");
-	InicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	ActualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	PintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	inicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
+	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
@@ -284,7 +240,7 @@ void inicializaJuego (void) {
 	piUnlock (FLAGS_ARKANO_KEY);
 }
 
-void mueveRaquetaIzquierda (void) {
+void mueveRaquetaIzquierda (fsm_t* this) {
     // void MueveRaquetaIzquierda (void): funcion encargada de ejecutar
     // el movimiento hacia la izquierda contemplado para la raqueta.
     // Debe garantizar la viabilidad del mismo mediante la comprobaci�n
@@ -302,9 +258,9 @@ void mueveRaquetaIzquierda (void) {
 	}
 	else{
 		juego.arkanoPi.raqueta.x--;
-		PintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+		pintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	}
-	ActualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
+	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
 	//PintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
@@ -314,7 +270,7 @@ void mueveRaquetaIzquierda (void) {
 
 }
 
-void mueveRaquetaDerecha (void) {
+void mueveRaquetaDerecha (fsm_t* this) {
     // void MueveRaquetaDerecha (void): funci�n similar a la anterior
     // encargada del movimiento hacia la derecha.
 
@@ -327,10 +283,10 @@ void mueveRaquetaDerecha (void) {
 	}
 	else{
 		juego.arkanoPi.raqueta.x++;
-		PintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+		pintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	}
-	ActualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	PintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
@@ -338,7 +294,7 @@ void mueveRaquetaDerecha (void) {
 	piUnlock (FLAGS_ARKANO_KEY);
 }
 
-void movimientoPelota(void) {
+void movimientoPelota(fsm_t* this) {
     // void MovimientoPelota (void): funci�n encargada de actualizar la
     // posici�n de la pelota conforme a la trayectoria definida para �sta.
     // Para ello deber� identificar los posibles rebotes de la pelota para,
@@ -355,27 +311,27 @@ void movimientoPelota(void) {
 	printf("%s\n", "[LOG] MovimientoPelota");
 	printf("Estado: %i\n", juego.estado);
 	// Elegimos lo que se hace segun el tipo de rebote
-	int flag_rebote = ObtenerTipoDeRebote();
+	int flag_rebote = obtenerTipoDeRebote();
 	switch(flag_rebote) {
 		// Caso en que no existe rebote porque la siguiente casilla esta vacia
 	    case NO_REBOTE:
-	    	DesplazarPelota();
+	    	desplazarPelota();
 			break;
 	    // Caso en que se choca contra la raqueta
 	    case REBOTE_RAQUETA:
-	    	ReboteRaqueta();
+	    	reboteRaqueta();
 	    	break;
 		// Caso en que se choca contra un lateral: izquierda o derecha
 	    case REBOTE_LATERAL:
-	    	ReboteLateral();
+	    	reboteLateral();
 	        break;
 		// Caso en que se choca contra un ladrillo
 	    case REBOTE_LADRILLO:
-	    	ReboteLadrillo();
+	    	reboteLadrillo();
 	        break;
 	    // Caso en que se choca contra el techo (cuando ya no hay ladrillos debajo)
 	    case REBOTE_TECHO:
-	    	ReboteTecho();
+	    	reboteTecho();
 	        break;
 	    // Caso en que se choca contra un el limite inferior (pierdes la partida)
 	    case REBOTE_PERDIDA:
@@ -385,28 +341,26 @@ void movimientoPelota(void) {
 	    	piUnlock (FLAGS_ARKANO_KEY);
 	        break;
 	}
-	ActualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	PintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
 	flags &= ~FLAG_PELOTA;
 	piUnlock (FLAGS_ARKANO_KEY);
-
-	timein_mov_pelota=millis();
 }
 
-void reseteaJuego (void) {
+void reseteaJuego (fsm_t* this) {
     //void ReseteaJuego (void): funci�n encargada de llevar a cabo la
     // reinicializaci�n de cuantas variables o estructuras resulten
     // necesarias para dar comienzo a una nueva partida.
 
 	piLock (STD_IO_BUFFER_KEY);
 	printf("%s\n", "[LOG] ReseteaJuego");
-	InicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	PintaMensajeInicial((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	inicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
+	pintaMensajeInicial((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	printf("%s\n", "PANTALLA INICIAL");
-	PintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
@@ -416,12 +370,12 @@ void reseteaJuego (void) {
 	piUnlock (FLAGS_ARKANO_KEY);
 }
 
-void finalJuego(void){
+void finalJuego(fsm_t* this){
     // void FinalJuego (void): funci�n encargada de mostrar en la ventana de
     // terminal los mensajes necesarios para informar acerca del resultado del juego.
 
 	printf("%s\n", "[LOG] FinalJuego");
-	if(CalculaLadrillosRestantes((tipo_pantalla*)&(juego.arkanoPi.ladrillos)) == 0){
+	if(calculaLadrillosRestantes((tipo_pantalla*)&(juego.arkanoPi.ladrillos)) == 0){
 		printf("%s\n", "HAS GANADO");
 	}
 	else{
@@ -495,7 +449,7 @@ void reboteLadrillo(void){
 	// Cambiamos trayectoria
 	juego.arkanoPi.pelota.yv = - juego.arkanoPi.pelota.yv;
 	// Desplazamos pelota
-   	DesplazarPelota();
+   	desplazarPelota();
 }
 
 void reboteTecho(void){
@@ -505,7 +459,7 @@ void reboteTecho(void){
 	// Cambiamos trayectoria
 	juego.arkanoPi.pelota.yv = - juego.arkanoPi.pelota.yv;
 	// Desplazamos pelota
-   	DesplazarPelota();
+   	desplazarPelota();
 }
 
 void reboteLateral(void){
@@ -516,7 +470,7 @@ void reboteLateral(void){
 	// Cambiamos trayectoria
 	juego.arkanoPi.pelota.xv = - juego.arkanoPi.pelota.xv;
 	// Desplazamos pelota
-   	DesplazarPelota();
+   	desplazarPelota();
 }
 
 void reboteRaqueta(void){
@@ -543,7 +497,7 @@ void reboteRaqueta(void){
 	}
 	// La pelota en cualquier caso va hacia arriba
 	juego.arkanoPi.pelota.yv = - 1;
-   	DesplazarPelota();
+   	desplazarPelota();
 }
 
 
@@ -587,13 +541,20 @@ int systemSetup (void) {
 	pinMode(GPIO_RAQ_DER, INPUT);
 	wiringPiISR(GPIO_RAQ_IZQ, INT_EDGE_FALLING, PulsaRaqIzq);
 	wiringPiISR(GPIO_RAQ_DER, INT_EDGE_FALLING, PulsaRaqDer);
+
+	tmr_t* refresco_tmr = tmr_new(refrescarLeds);
+	tmr_startms((tmr_t*)refresco_tmr, REFRESCO_TIMEOUT);
+
+	tmr_t* pelota_tmr = tmr_new(pelotaTmrFinished);
+	tmr_startms((tmr_t*)pelota_tmr, PELOTA_TIMEOUT);
+
 	// Lanzamos thread para exploracion del teclado convencional del PC
-	x = piThreadCreate (thread_explora_teclado);
-	if (x != 0) {
-		printf ("it didn't start!!!\n");
-		piUnlock (STD_IO_BUFFER_KEY);
-		return -1;
-    }
+	// x = piThreadCreate (thread_explora_teclado);
+	// if (x != 0) {
+	// 	printf ("it didn't start!!!\n");
+	// 	piUnlock (STD_IO_BUFFER_KEY);
+	// 	return -1;
+    // }
 	piUnlock (STD_IO_BUFFER_KEY);
 	return 1;
 }
@@ -602,40 +563,40 @@ int systemSetup (void) {
 //------------------------------------------------------
 // ARKANOPI: PI_THREAD (thread_explora_teclado): Thread function for keystrokes detection and interpretation
 //------------------------------------------------------
-PI_THREAD (thread_explora_teclado) {
-	int tecla_pulsada;
-
-	while(1) {
-		delay(10); // Wiring Pi function: pauses program execution for at least 10 ms
-		piLock (STD_IO_BUFFER_KEY);
-		if(kbhit()) {
-			tecla_pulsada = kbread();
-			printf("\nTecla %c\n", tecla_pulsada);
-			switch(tecla_pulsada) {
-				case 'i':  // Mover raqueta a la izquierda
-					pulsaRaqIzq();
-					break;
-
-				case 'o':  // Mover Raqueta a la derecha
-					pulsaRaqDer();
-					break;
-
-				case 'p':  // Mover Raqueta a la derecha
-					pelotaTmrFinished();
-					break;
-
-				case 'q': // Salir
-					exit(0);
-					break;
-
-				default:
-					printf("INVALID KEY!!!\n");
-					break;
-			}
-		}
-		piUnlock (STD_IO_BUFFER_KEY);
-	}
-}
+// PI_THREAD (thread_explora_teclado) {
+// 	int tecla_pulsada;
+//
+// 	while(1) {
+// 		delay(10); // Wiring Pi function: pauses program execution for at least 10 ms
+// 		piLock (STD_IO_BUFFER_KEY);
+// 		if(kbhit()) {
+// 			tecla_pulsada = kbread();
+// 			printf("\nTecla %c\n", tecla_pulsada);
+// 			switch(tecla_pulsada) {
+// 				case 'i':  // Mover raqueta a la izquierda
+// 					pulsaRaqIzq();
+// 					break;
+//
+// 				case 'o':  // Mover Raqueta a la derecha
+// 					pulsaRaqDer();
+// 					break;
+//
+// 				case 'p':  // Mover Raqueta a la derecha
+// 					pelotaTmrFinished();
+// 					break;
+//
+// 				case 'q': // Salir
+// 					exit(0);
+// 					break;
+//
+// 				default:
+// 					printf("INVALID KEY!!!\n");
+// 					break;
+// 			}
+// 		}
+// 		piUnlock (STD_IO_BUFFER_KEY);
+// 	}
+// }
 
 //------------------------------------------------------------------
 // ARKANOPI: FUNCION PRINCIPAL MAIN
@@ -646,44 +607,25 @@ int main ()
 	unsigned int next;
 	// Maquina de estados: lista de transiciones
 	// {EstadoOrigen,Funci�nDeEntrada,EstadoDestino,Funci�nDeSalida}
-	// DECLARACION TEMPORIZADORES
-	tmr_t* refresco_tmr = tmr_new(refresco_tmr_finished);
-
-	// DECLARACION TABLAS FSM
 	fsm_trans_t arkano_tabla[] = {
-		{WAIT_START, comprueba_tecla_pulsada, WAIT_PUSH, InicializaJuego},
-		// {WAIT_PUSH, timer_mov_pelota_finished, WAIT_PUSH, MovimientoPelota},
-		{WAIT_PUSH, comprueba_tecla_pelota, WAIT_PUSH, MovimientoPelota},
-		{WAIT_PUSH, comprueba_tecla_raqueta_izquierda, WAIT_PUSH, MueveRaquetaIzquierda},
-		{WAIT_PUSH, comprueba_tecla_raqueta_derecha, WAIT_PUSH, MueveRaquetaDerecha},
-		{WAIT_PUSH, comprueba_final_juego, WAIT_END, FinalJuego},
-		{WAIT_END, comprueba_tecla_pulsada, WAIT_PUSH, ReseteaJuego},
+		{WAIT_START, compruebaTeclaPulsada, WAIT_PUSH, inicializaJuego},
+		{WAIT_PUSH, compruebaTimeoutPelota, WAIT_PUSH, movimientoPelota},
+		{WAIT_PUSH, compruebaTeclaRaquetaIzquierda, WAIT_PUSH, mueveRaquetaIzquierda},
+		{WAIT_PUSH, compruebaTeclaRaquetaDerecha, WAIT_PUSH, mueveRaquetaDerecha},
+		{WAIT_PUSH, compruebaFinalJuego, WAIT_END, finalJuego},
+		{WAIT_END, compruebaTeclaPulsada, WAIT_PUSH, reseteaJuego},
 		{ -1, NULL, -1, NULL },
 	};
-	fsm_trans_t refresco_tabla[] = {
-		{REFRESCO, comprueba_timeout_refresco, REFRESCO, refrescar_leds },
-		{ -1, NULL, -1, NULL }, };
-
-	// DECLARACION FSM
-	fsm_t* arkano_fsm = fsm_new (WAIT_START, arkano_tabla, NULL);
-	fsm_t* refresco_fsm = fsm_new(REFRESCO_COL, refresco_tabla, refresco_tmr);
-
 	// Configuracion e inicializacion del sistema
 	arkanoPiFSMSetup (arkano_fsm);
-	refrescoFSMSetup (arkano_fsm);
 	systemSetup();
 
-	// COMIENZO TEMPORIZADORES
 	next = millis();
-	tmr_startms((tmr_t*)(refresco_fsm->user_data), REFRESCO_TIMEOUT);
-
 	while (1) {
 		fsm_fire (arkano_fsm);
-		fsm_fire (refresco_fsm);
 		next += CLK_MS;
 		delay_until (next);
 	}
 	fsm_destroy (arkano_fsm);
-	fsm_destroy (refresco_fsm);
-	tmr_destroy((tmr_t*)(refresco_fsm->user_data));
+	// tmr_destroy((tmr_t*)(refresco_fsm->user_data));
 }
