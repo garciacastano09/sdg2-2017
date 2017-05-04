@@ -59,7 +59,7 @@
 //------------------------------------------------------------------
 // REFRESCO DE LEDS
 //------------------------------------------------------------------
-static void refrescarLeds(tmr_t* this);
+void refrescarLeds(union sigval value);
 
 void activaFilasLed (tipo_pantalla* p_pantalla, int* columna);
 
@@ -69,10 +69,18 @@ typedef enum {
 	WAIT_END=2} tipo_estados_juego;
 
 typedef struct {
+	tmr_t* pelota_tmr;
+	tmr_t* refresco_tmr;
+} tipo_temporizadores;
+
+
+typedef struct {
 	tipo_arkanoPi arkanoPi;
 	tipo_estados_juego estado;
 	char teclaPulsada;
+	tipo_temporizadores temporizadores;
 } tipo_juego;
+
 
 //------------------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES SETUP
@@ -84,7 +92,7 @@ void arkanoPiFSMSetup(fsm_t* arkano_fsm);
 //------------------------------------------------------------------
 void pulsaRaqIzq(void);
 void pulsaRaqDer(void);
-void pelotaTmrFinished(tmr_t* this);
+void pelotaTmrFinished(union sigval value);
 
 //------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES DE ENTRADA
