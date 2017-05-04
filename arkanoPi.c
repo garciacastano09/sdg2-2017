@@ -16,7 +16,7 @@ static int gpio_row[7]={GPIO_ROW_1,GPIO_ROW_2,GPIO_ROW_3,GPIO_ROW_4,
 static int flags_arkano_FSM = 0;
 static tipo_juego juego;
 
-// static int debounce_time = 0;
+static int debounce_time = 0;
 
 static int col_counter=0;
 static int columna=0;
@@ -130,43 +130,42 @@ void arkanoPiFSMSetup(fsm_t* arkano_fsm) {
 	piUnlock (FLAGS_ARKANO_KEY);
 	reseteaJuego(arkano_fsm);
 
-	piLock (STD_IO_BUFFER_KEY);
+	/*piLock (STD_IO_BUFFER_KEY);
 	printf("\nPULSE P para mover la pelota, I para moverse a la izquierda y O para moverse a la derecha.\n");
-	piUnlock (STD_IO_BUFFER_KEY);
+	piUnlock (STD_IO_BUFFER_KEY);*/
 }
 
 //------------------------------------------------------------------
 // ARKANOPI FSM: SETEO DE FLAGS
 //------------------------------------------------------------------
 void pulsaRaqIzq(void){
-	// if(millis() < debounce_time){
-	// 	debounce_time = millis() + DEBOUNCE_TIME;
-	// 	return;
-	// }
+	if(millis() < debounce_time){
+	 	debounce_time = millis() + DEBOUNCE_TIME;
+	 	return;
+	}
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM |= FLAG_RAQUETA_IZQUIERDA;
 	piUnlock (FLAGS_ARKANO_KEY);
 
-	// while(digitalRead(GPIO_RAQ_IZQ) == HIGH){
-	// 	delay(1);
-	// }
-	// debounce_time = millis() + DEBOUNCE_TIME;
+	while(digitalRead(GPIO_RAQ_IZQ) == HIGH){
+		delay(1);
+	 }
+	debounce_time = millis() + DEBOUNCE_TIME;
 }
 
 void pulsaRaqDer(void){
-	// if(millis() < debounce_time){
-	// 	debounce_time = millis() + DEBOUNCE_TIME;
-	// 	return;
-	// }
+	if(millis() < debounce_time){
+	 	debounce_time = millis() + DEBOUNCE_TIME;
+	 	return;
+	}
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM |= FLAG_RAQUETA_DERECHA;
 	piUnlock (FLAGS_ARKANO_KEY);
 
-	// while(digitalRead(GPIO_RAQ_DER) == HIGH){
-	// 	delay(1);
-	// }
-	// debounce_time = millis() + DEBOUNCE_TIME;
-
+	while(digitalRead(GPIO_RAQ_DER) == HIGH){
+		delay(1);
+	}
+	debounce_time = millis() + DEBOUNCE_TIME;
 }
 
 void pelotaTmrFinished(union sigval value){
@@ -237,7 +236,7 @@ void inicializaJuego (fsm_t* this) {
 	printf("%s\n", "[LOG] InicializaJuego");
 	inicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
@@ -268,7 +267,7 @@ void mueveRaquetaIzquierda (fsm_t* this) {
 		pintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	}
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	//PintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
@@ -293,7 +292,7 @@ void mueveRaquetaDerecha (fsm_t* this) {
 		pintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	}
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
@@ -349,7 +348,7 @@ void movimientoPelota(fsm_t* this) {
 	        break;
 	}
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
@@ -367,7 +366,7 @@ void reseteaJuego (fsm_t* this) {
 	inicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
 	pintaMensajeInicial((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	printf("%s\n", "PANTALLA INICIAL");
-	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	piUnlock (STD_IO_BUFFER_KEY);
 
 	piLock (FLAGS_ARKANO_KEY);
@@ -553,55 +552,9 @@ int systemSetup (void) {
 	tmr_startms((tmr_t*)juego.temporizadores.refresco_tmr, REFRESCO_TIMEOUT);
 	tmr_startms((tmr_t*)juego.temporizadores.pelota_tmr, PELOTA_TIMEOUT);
 
-	// Lanzamos thread para exploracion del teclado convencional del PC
-	// x = piThreadCreate (thread_explora_teclado);
-	// if (x != 0) {
-	// 	printf ("it didn't start!!!\n");
-	// 	piUnlock (STD_IO_BUFFER_KEY);
-	// 	return -1;
-    // }
 	piUnlock (STD_IO_BUFFER_KEY);
 	return 1;
 }
-
-
-//------------------------------------------------------
-// ARKANOPI: PI_THREAD (thread_explora_teclado): Thread function for keystrokes detection and interpretation
-//------------------------------------------------------
-// PI_THREAD (thread_explora_teclado) {
-// 	int tecla_pulsada;
-//
-// 	while(1) {
-// 		delay(10); // Wiring Pi function: pauses program execution for at least 10 ms
-// 		piLock (STD_IO_BUFFER_KEY);
-// 		if(kbhit()) {
-// 			tecla_pulsada = kbread();
-// 			printf("\nTecla %c\n", tecla_pulsada);
-// 			switch(tecla_pulsada) {
-// 				case 'i':  // Mover raqueta a la izquierda
-// 					pulsaRaqIzq();
-// 					break;
-//
-// 				case 'o':  // Mover Raqueta a la derecha
-// 					pulsaRaqDer();
-// 					break;
-//
-// 				case 'p':  // Mover Raqueta a la derecha
-// 					pelotaTmrFinished();
-// 					break;
-//
-// 				case 'q': // Salir
-// 					exit(0);
-// 					break;
-//
-// 				default:
-// 					printf("INVALID KEY!!!\n");
-// 					break;
-// 			}
-// 		}
-// 		piUnlock (STD_IO_BUFFER_KEY);
-// 	}
-// }
 
 //------------------------------------------------------------------
 // ARKANOPI: FUNCION PRINCIPAL MAIN
