@@ -9,15 +9,11 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/time.h>
-
-// #include "kbhit.h" // para poder detectar teclas pulsadas sin bloqueo y leer las teclas pulsadas
-
 #include "arkanoPi.h"
 #include "arkanoPiLib.h"
 #include <wiringPi.h>
 #include "fsm.h"
 #include "tmr.h"
-
 
 // FLAGS DEL SISTEMA
 #define CLK_MS 10 // PERIODO DE ACTUALIZACION DE LA MAQUINA ESTADOS
@@ -51,6 +47,8 @@
 #define DEBOUNCE_TIME  5
 #define PELOTA_TIMEOUT 500 //tiempo de movimiento de pelota
 #define REFRESCO_TIMEOUT 1 //tiempo de exploraci�n de columnas
+
+#define __MODO_DEBUG_TERMINAL__ 0 //tiempo de exploraci�n de columnas
 
 // A 'key' which we can lock and unlock - values are 0 through 3
 //	This is interpreted internally as a pthread_mutex by wiringPi
@@ -129,10 +127,5 @@ void reboteRaqueta(void);
 //------------------------------------------------------
 int systemSetup (void);
 void delayUntil (unsigned int next);
-
-//------------------------------------------------------
-// ARKANO PI: SUBRUTINAS DE ATENCION A LAS INTERRUPCIONES
-//------------------------------------------------------
-PI_THREAD (thread_explora_teclado);
 
 #endif /* ARKANOPI_H_ */

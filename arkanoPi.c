@@ -21,13 +21,6 @@ static int debounce_time = 0;
 static int col_counter=0;
 static int columna=0;
 
-// espera hasta la pr�xima activaci�n del reloj
-void delay_until (unsigned int next) {
-	unsigned int now = millis();
-	if (next > now) {
-		delay (next - now);
-    }
-}
 //------------------------------------------------------------------
 // REFRESCO DE LEDS
 //------------------------------------------------------------------
@@ -109,7 +102,11 @@ void refrescarLeds(union sigval value){
 }
 
 void activaFilasLed (tipo_pantalla* p_pantalla, int* columna){
-    // printf("%s\n", "[LOG] PintaFilasLed");
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] PintaFilasLed");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
     int i;
     for(i=0;i<MATRIZ_ALTO;i++) {
         if(p_pantalla->matriz[*columna][i] == 1){
@@ -129,10 +126,11 @@ void arkanoPiFSMSetup(fsm_t* arkano_fsm) {
 	flags_arkano_FSM = 0;
 	piUnlock (FLAGS_ARKANO_KEY);
 	reseteaJuego(arkano_fsm);
-
-	/*piLock (STD_IO_BUFFER_KEY);
-	printf("\nPULSE P para mover la pelota, I para moverse a la izquierda y O para moverse a la derecha.\n");
-	piUnlock (STD_IO_BUFFER_KEY);*/
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("\nPULSE P para mover la pelota, I para moverse a la izquierda y O para moverse a la derecha.\n");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 }
 
 //------------------------------------------------------------------
@@ -231,13 +229,16 @@ void inicializaJuego (fsm_t* this) {
     // void InicializaJuego (void): funcion encargada de llevar a cabo
     // la oportuna inicializaciï¿½n de toda variable o estructura de datos
     // que resulte necesaria para el desarrollo del juego.
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] InicializaJuego");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	piLock (STD_IO_BUFFER_KEY);
-	printf("%s\n", "[LOG] InicializaJuego");
 	inicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
-	piUnlock (STD_IO_BUFFER_KEY);
+
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM &= ~FLAG_PELOTA;
@@ -255,20 +256,27 @@ void mueveRaquetaIzquierda (fsm_t* this) {
     // (i.e. al menos uno de los leds que componen la raqueta debe permanecer
     // visible durante todo el transcurso de la partida).
 
-	piLock (STD_IO_BUFFER_KEY);
-	printf("%s\n", "[LOG] MueveRaquetaIzquierda");
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] MueveRaquetaIzquierda");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 	// Esto asegura que la raqueta se mantenga en la fila mas baja de la matriz
 	juego.arkanoPi.raqueta.y=MATRIZ_ALTO-1;
 	if(juego.arkanoPi.raqueta.x < MIN_X_RAQUETA){
-		printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la izquierda imposible");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la izquierda imposible");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 	}
 	else{
 		juego.arkanoPi.raqueta.x--;
 		pintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	}
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
-	piUnlock (STD_IO_BUFFER_KEY);
+
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM &= ~FLAG_RAQUETA_IZQUIERDA;
@@ -279,21 +287,28 @@ void mueveRaquetaIzquierda (fsm_t* this) {
 void mueveRaquetaDerecha (fsm_t* this) {
     // void MueveRaquetaDerecha (void): funciï¿½n similar a la anterior
     // encargada del movimiento hacia la derecha.
-
-	piLock (STD_IO_BUFFER_KEY);
-	printf("%s\n", "[LOG] MueveRaquetaDerecha");
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] MueveRaquetaDerecha");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 	// Esto asegura que la raqueta se mantenga en la fila mas baja de la matriz
 	juego.arkanoPi.raqueta.y=MATRIZ_ALTO-1;
 	if(juego.arkanoPi.raqueta.x > MAX_X_RAQUETA){
-		printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la derecha imposible");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] MueveRaquetaIzquierda: Movimiento a la derecha imposible");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 	}
 	else{
 		juego.arkanoPi.raqueta.x++;
 		pintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	}
+
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
-	piUnlock (STD_IO_BUFFER_KEY);
+
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM &= ~FLAG_RAQUETA_DERECHA;
@@ -311,11 +326,12 @@ void movimientoPelota(fsm_t* this) {
     // bien porque el jugador no consiga devolver la pelota, y por tanto ï¿½sta
     // rebase el lï¿½mite inferior del ï¿½rea de juego, bien porque se agoten
     // los ladrillos visibles en el ï¿½rea de juego.
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] MovimientoPelota");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	piLock (STD_IO_BUFFER_KEY);
-
-	printf("%s\n", "[LOG] MovimientoPelota");
-	printf("Estado: %i\n", juego.estado);
 	// Elegimos lo que se hace segun el tipo de rebote
 	int flag_rebote = obtenerTipoDeRebote();
 	switch(flag_rebote) {
@@ -348,8 +364,8 @@ void movimientoPelota(fsm_t* this) {
 	        break;
 	}
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
-	piUnlock (STD_IO_BUFFER_KEY);
+
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM &= ~FLAG_PELOTA;
@@ -360,14 +376,21 @@ void reseteaJuego (fsm_t* this) {
     //void ReseteaJuego (void): funciï¿½n encargada de llevar a cabo la
     // reinicializaciï¿½n de cuantas variables o estructuras resulten
     // necesarias para dar comienzo a una nueva partida.
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] ReseteaJuego");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	piLock (STD_IO_BUFFER_KEY);
-	printf("%s\n", "[LOG] ReseteaJuego");
 	inicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
 	pintaMensajeInicial((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
-	printf("%s\n", "PANTALLA INICIAL");
-	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
-	piUnlock (STD_IO_BUFFER_KEY);
+
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "PANTALLA INICIAL");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 
 	piLock (FLAGS_ARKANO_KEY);
 	flags_arkano_FSM &= ~FLAG_PELOTA;
@@ -379,13 +402,31 @@ void reseteaJuego (fsm_t* this) {
 void finalJuego(fsm_t* this){
     // void FinalJuego (void): funciï¿½n encargada de mostrar en la ventana de
     // terminal los mensajes necesarios para informar acerca del resultado del juego.
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] FinalJuego");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	printf("%s\n", "[LOG] FinalJuego");
 	if(calculaLadrillosRestantes((tipo_pantalla*)&(juego.arkanoPi.ladrillos)) == 0){
-		printf("%s\n", "HAS GANADO");
+		pintaMensajeVictoria((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] HAS GANADO");
+			piUnlock (STD_IO_BUFFER_KEY);
+			pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+		#endif
 	}
 	else{
-		printf("%s\n", "HAS PERDIDO");
+		pintaMensajeDerrota((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] HAS PERDIDO");
+			piUnlock (STD_IO_BUFFER_KEY);
+			pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+		#endif
 	}
 }
 
@@ -395,41 +436,68 @@ void finalJuego(fsm_t* this){
 int obtenerTipoDeRebote(void){
     // int ObtenerTipoDeRebote(void): verifica si la proxima casilla causarï¿½
     // un rebote y de quï¿½ tipo
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] ObtenerTipoDeRebote");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	printf("%s\n", "[LOG] ObtenerTipoDeRebote");
 	// Calculo de las nuevas coordenadas que tendrï¿½a la pelota en el prï¿½ximo movimiento
 	int nuevo_y = juego.arkanoPi.pelota.y + juego.arkanoPi.pelota.yv;
 	int nuevo_x = juego.arkanoPi.pelota.x + juego.arkanoPi.pelota.xv;
-
 	int raqueta_x = juego.arkanoPi.raqueta.x;
 
 	// Caso de perdida de pelota
 	if(nuevo_y == MATRIZ_ALTO){
-		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE PERDIDA");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] ProximoMovimiento: REBOTE PERDIDA");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 		return REBOTE_PERDIDA;
 	}
 	// Caso de lateral de la pantalla
 	else if(nuevo_x == MATRIZ_ANCHO || nuevo_x == -1){
-		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE LATERAL");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] ProximoMovimiento: REBOTE LATERAL");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 		return REBOTE_LATERAL;
 	}
 	// Caso de techo de la pantalla
 	else if(nuevo_y == -1){
-		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE TECHO");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] ProximoMovimiento: REBOTE TECHO");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 		return REBOTE_TECHO;
 	}
 	// Caso de choque contra raqueta
 	else if(nuevo_y == MATRIZ_ALTO - 1 && (nuevo_x == raqueta_x || nuevo_x == raqueta_x + 1 || nuevo_x == raqueta_x - 1)){
-		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE RAQUETA");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] ProximoMovimiento: REBOTE RAQUETA");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 		return REBOTE_RAQUETA;
 	}
 	// Caso de choque contra ladrillo
 	else if(juego.arkanoPi.ladrillos.matriz[nuevo_x][nuevo_y]){
-		printf("%s\n", "[LOG] ProximoMovimiento: REBOTE LADRILLO");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] ProximoMovimiento: REBOTE LADRILLO");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 		return REBOTE_LADRILLO;
 	}
 	else{
-		printf("%s\n", "[LOG] ProximoMovimiento: NO REBOTE");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] ProximoMovimiento: NO REBOTE");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 		return NO_REBOTE;
 	}
 }
@@ -437,8 +505,11 @@ int obtenerTipoDeRebote(void){
 void desplazarPelota(void){
     // void DesplazarPelota(void): mueve la posicion de la pelota un pixel
     // segï¿½n lo definido en la trayectoria. La trayectoria no se cambia.
-
-	printf("%s\n", "[LOG] DesplazarPelota");
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] DesplazarPelota");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 	juego.arkanoPi.pelota.x = juego.arkanoPi.pelota.x + juego.arkanoPi.pelota.xv;
 	juego.arkanoPi.pelota.y = juego.arkanoPi.pelota.y + juego.arkanoPi.pelota.yv;
 }
@@ -446,8 +517,12 @@ void desplazarPelota(void){
 void reboteLadrillo(void){
     // void ReboteLadrillo(void): elimina el ladrillo y cambia la trayectoria de
     // la pelota hacia abajo
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] ReboteLadrillo");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	printf("%s\n", "[LOG] ReboteLadrillo");
 	// Eliminamos el ladrillo
 	juego.arkanoPi.ladrillos.matriz
 		[juego.arkanoPi.pelota.x + juego.arkanoPi.pelota.xv]
@@ -460,8 +535,12 @@ void reboteLadrillo(void){
 
 void reboteTecho(void){
     // void ReboteSuperior(void): cambia la trayectoria de la pelota hacia abajo
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] ReboteSuperior");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	printf("%s\n", "[LOG] ReboteSuperior");
 	// Cambiamos trayectoria
 	juego.arkanoPi.pelota.yv = - juego.arkanoPi.pelota.yv;
 	// Desplazamos pelota
@@ -471,8 +550,12 @@ void reboteTecho(void){
 void reboteLateral(void){
     // void ReboteLateral(void): cambia la trayectoria de la pelota hacia el
     // lado contrario
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] ReboteLateral");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	printf("%s\n", "[LOG] ReboteLateral");
 	// Cambiamos trayectoria
 	juego.arkanoPi.pelota.xv = - juego.arkanoPi.pelota.xv;
 	// Desplazamos pelota
@@ -482,8 +565,12 @@ void reboteLateral(void){
 void reboteRaqueta(void){
     // void ReboteRaqueta(void): cambia la trayectoria de la pelota con la logica
     // correspondiente
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] ReboteRaqueta");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
 
-	printf("%s\n", "[LOG] ReboteRaqueta");
 	int nueva_posicion_x = juego.arkanoPi.pelota.x + juego.arkanoPi.pelota.xv;
 	// Cambiamos trayectoria
 	// Caso en que la pelota choca a la IZQUIERDA de la raqueta
@@ -499,7 +586,11 @@ void reboteRaqueta(void){
 			juego.arkanoPi.pelota.xv = 1;
 	}
 	else{
-		printf("%s\n", "[LOG] ReboteRaqueta: ");
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] ERROR: Caso imposible");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 	}
 	// La pelota en cualquier caso va hacia arriba
 	juego.arkanoPi.pelota.yv = - 1;
@@ -525,14 +616,22 @@ int systemSetup (void) {
 	// configurar las interrupciones externas asociadas a los pines GPIO,
 	// configurar las interrupciones periï¿½dicas y sus correspondientes temporizadores,
 	// crear, si fuese necesario, los threads adicionales que pueda requerir el sistema
-	piLock (STD_IO_BUFFER_KEY);
-	printf("%s\n", "[LOG] systemSetup");
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] systemSetup");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
+
 	// sets up the wiringPi library
 	if (wiringPiSetupGpio () < 0) {
-		printf ("Unable to setup wiringPi\n");
-		piUnlock (STD_IO_BUFFER_KEY);
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf ("Unable to setup wiringPi\n");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
 		return -1;
 	}
+	// Seteo de los puertos de entrada y de salida
 	int i=0;
 	for (i=0; i<4; i++){
 		pinMode(gpio_col[i], OUTPUT);
@@ -541,18 +640,18 @@ int systemSetup (void) {
 		pinMode(gpio_row[i], OUTPUT);
 		pullUpDnControl (gpio_row[i], PUD_DOWN ); // todas las filas inicialmente a pull down
 	}
+
 	pinMode(GPIO_RAQ_IZQ, INPUT);
 	pinMode(GPIO_RAQ_DER, INPUT);
 	wiringPiISR(GPIO_RAQ_IZQ, INT_EDGE_FALLING, pulsaRaqIzq);
 	wiringPiISR(GPIO_RAQ_DER, INT_EDGE_FALLING, pulsaRaqDer);
 
+	// Creacion e inicializacion de temporizadores
 	juego.temporizadores.refresco_tmr = tmr_new(refrescarLeds);
 	juego.temporizadores.pelota_tmr = tmr_new(pelotaTmrFinished);
-
 	tmr_startms((tmr_t*)juego.temporizadores.refresco_tmr, REFRESCO_TIMEOUT);
 	tmr_startms((tmr_t*)juego.temporizadores.pelota_tmr, PELOTA_TIMEOUT);
 
-	piUnlock (STD_IO_BUFFER_KEY);
 	return 1;
 }
 
@@ -561,7 +660,12 @@ int systemSetup (void) {
 //------------------------------------------------------------------
 int main ()
 {
-	//printf("%s\n", "[LOG] main");
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] main");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
+
 	unsigned int next;
 	// Maquina de estados: lista de transiciones
 	// {EstadoOrigen,Funciï¿½nDeEntrada,EstadoDestino,Funciï¿½nDeSalida}
@@ -583,7 +687,7 @@ int main ()
 	while (1) {
 		fsm_fire (arkano_fsm);
 		next += CLK_MS;
-		delay_until (next);
+		delayUntil (next);
 	}
 	fsm_destroy (arkano_fsm);
 	tmr_destroy((tmr_t*)juego.temporizadores.refresco_tmr);
