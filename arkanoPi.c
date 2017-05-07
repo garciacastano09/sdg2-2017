@@ -3,6 +3,7 @@
 //------------------------------------------------------------------
 #include "arkanoPi.h"
 #include <wiringPi.h>
+#include <wiringPiSPI.h>
 #include "fsm.h"
 #include "tmr.h"
 
@@ -174,6 +175,14 @@ void pelotaTmrFinished(union sigval value){
 	tmr_startms((tmr_t*)juego.temporizadores.pelota_tmr, PELOTA_TIMEOUT);
 }
 
+void joystickTmrFinished(union sigval value){
+	piLock (FLAGS_ARKANO_KEY);
+	flags_arkano_FSM |= FLAG_JOYSTICK;
+	piUnlock (FLAGS_ARKANO_KEY);
+
+	tmr_startms((tmr_t*)juego.temporizadores.joystick_tmr, JOYSTICK_TIMEOUT);
+}
+
 //------------------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES DE ENTRADA
 //------------------------------------------------------------------
@@ -218,6 +227,15 @@ int compruebaTimeoutPelota (fsm_t* this) {
 	piLock (FLAGS_ARKANO_KEY);
 	// result vale 1 si en la variable flags_arkano_FSM se ha marcado FLAG_FINAL_JUEGO
 	result = (flags_arkano_FSM & FLAG_PELOTA);
+	piUnlock (FLAGS_ARKANO_KEY);
+	return result;
+}
+
+int compruebaTimeoutJoystick (fsm_t* this) {
+	int result;
+	piLock (FLAGS_ARKANO_KEY);
+	// result vale 1 si en la variable flags_arkano_FSM se ha marcado FLAG_FINAL_JUEGO
+	result = (flags_arkano_FSM & FLAG_JOYSTICK);
 	piUnlock (FLAGS_ARKANO_KEY);
 	return result;
 }
@@ -430,9 +448,87 @@ void finalJuego(fsm_t* this){
 	}
 }
 
+void movimientoJoystick (fsm_t* this){
+    // void movimientoJoystick (fsm_t* this): funcion encargada de mostrar la posicion de la raqueta
+	// correspondiente al joystick analogico haciendo lectura del ADC
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] movimientoJoystick");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
+
+	float voltaje_medido = lecturaADC();
+	if(voltaje_medido < 333.333) {
+		mueveRaquetaAPosicion(-1);
+	}
+	else if(voltaje_medido < 666.666) {
+		mueveRaquetaAPosicion(0);
+	}
+	else if(voltaje_medido < 999.999) {
+		mueveRaquetaAPosicion(1);
+	}
+	else if(voltaje_medido < 1333.333) {
+		mueveRaquetaAPosicion(2);
+	}
+	else if(voltaje_medido < 1666.666) {
+		mueveRaquetaAPosicion(3);
+	}
+	else if(voltaje_medido < 1999.999) {
+		mueveRaquetaAPosicion(4);
+	}
+	else if(voltaje_medido < 2333.333) {
+		mueveRaquetaAPosicion(5);
+	}
+	else if(voltaje_medido < 2666.666) {
+		mueveRaquetaAPosicion(6);
+	}
+	else if(voltaje_medido < 2999.999) {
+		mueveRaquetaAPosicion(7);
+	}
+	else if(voltaje_medido < 3333.333) {
+		mueveRaquetaAPosicion(8);
+	}
+	else if(voltaje_medido < 3666.666) {
+		mueveRaquetaAPosicion(9);
+	}
+	else if(voltaje_medido < 4000.000) {
+		mueveRaquetaAPosicion(10);
+	}
+	else {
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] movimientoJoystick: lecturaADC fuera de escala");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
+	}
+}
+
 //------------------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES SUPPORT
 //------------------------------------------------------------------
+void mueveRaquetaAPosicion (int posicion) {
+	#ifdef __MODO_DEBUG_TERMINAL__
+		piLock (STD_IO_BUFFER_KEY);
+		printf("%s\n", "[LOG] mueveRaquetaAPosicion");
+		piUnlock (STD_IO_BUFFER_KEY);
+	#endif
+
+	if(posicion < -1 || posicion > 10){
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf("%s\n", "[LOG] mueveRaquetaAPosicion: posicion fuera de escala");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
+	}
+	// Esto asegura que la raqueta se mantenga en la fila mas baja de la matriz
+	juego.arkanoPi.raqueta.y=MATRIZ_ALTO-1;
+	juego.arkanoPi.raqueta.x = posicion
+
+	pintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
+	pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+}
+
 int obtenerTipoDeRebote(void){
     // int ObtenerTipoDeRebote(void): verifica si la proxima casilla causarï¿½
     // un rebote y de quï¿½ tipo
@@ -606,6 +702,32 @@ void delayUntil (unsigned int next) {
     }
 }
 
+//------------------------------------------------------------------
+// JOYSTICK: LECTURA ADC
+//------------------------------------------------------------------
+float lecturaADC (void) {
+	unsigned char ByteSPI[3]; //Buffer lectura escritura SPI
+	int resultado_SPI = 0; //Control operacion SPI
+	float voltaje_medido = 0.0; //Valor medido. A calcular a partir del buffer
+	ByteSPI[0] = 0b10011111; // Configuracion ADC (10011111 unipolar, 0-2.5v, canal 0, salida 1)
+    ByteSPI[1] = 0b0;
+    ByteSPI[2] = 0b0;
+	resultado_SPI = wiringPiSPIDataRW (SPI_ADC_CH, ByteSPI, 3); //Enviamos y leemos tres bytes (8+12+4 bits)
+	usleep(20);
+	int salida_SPI = ((ByteSPI[1] << 5) | (ByteSPI[2] >> 3)) & 0xFFF;
+	voltaje_medido = 2*2.50 * (((float) salida_SPI)/4095.0);
+	#ifdef __MODO_DEBUG_TERMINAL__
+		printf("Lectura ADC MAX1246: %d\n", resultado_SPI); //
+		printf("Primer byte: %02X \n", ByteSPI[0]);
+		printf("Segundo Byte: %02X \n", ByteSPI[1]);
+		printf("Tercer byte: %02X \n", ByteSPI[2]);
+		printf("Valor entero: %i \n", salida_SPI);
+		printf("Voltaje medido: %f \n",voltaje_medido);
+		fflush(stdout);
+	#endif
+	return voltaje_medido;
+}
+
 //------------------------------------------------------
 // ARKANOPI: FUNCIONES DE INICIALIZACION
 //------------------------------------------------------
@@ -622,11 +744,21 @@ int systemSetup (void) {
 		piUnlock (STD_IO_BUFFER_KEY);
 	#endif
 
-	// sets up the wiringPi library
+	// sets up the wiringPi GPIO mode
 	if (wiringPiSetupGpio () < 0) {
 		#ifdef __MODO_DEBUG_TERMINAL__
 			piLock (STD_IO_BUFFER_KEY);
-			printf ("Unable to setup wiringPi\n");
+			printf ("No se pudo configurar correctamente los puertos GPIO\n");
+			piUnlock (STD_IO_BUFFER_KEY);
+		#endif
+		return -1;
+	}
+
+	// Configuracion del ADC en el CH0
+	if (wiringPiSPISetup (SPI_ADC_CH, SPI_ADC_FREQ) < 0) {
+		#ifdef __MODO_DEBUG_TERMINAL__
+			piLock (STD_IO_BUFFER_KEY);
+			printf ("No se pudo configurar correctamente el dispositivo en CH0\n");
 			piUnlock (STD_IO_BUFFER_KEY);
 		#endif
 		return -1;
@@ -640,7 +772,6 @@ int systemSetup (void) {
 		pinMode(gpio_row[i], OUTPUT);
 		pullUpDnControl (gpio_row[i], PUD_DOWN ); // todas las filas inicialmente a pull down
 	}
-
 	pinMode(GPIO_RAQ_IZQ, INPUT);
 	pinMode(GPIO_RAQ_DER, INPUT);
 	wiringPiISR(GPIO_RAQ_IZQ, INT_EDGE_FALLING, pulsaRaqIzq);
@@ -649,8 +780,10 @@ int systemSetup (void) {
 	// Creacion e inicializacion de temporizadores
 	juego.temporizadores.refresco_tmr = tmr_new(refrescarLeds);
 	juego.temporizadores.pelota_tmr = tmr_new(pelotaTmrFinished);
+	juego.temporizadores.joystick_tmr = tmr_new(joystickTmrFinished);
 	tmr_startms((tmr_t*)juego.temporizadores.refresco_tmr, REFRESCO_TIMEOUT);
 	tmr_startms((tmr_t*)juego.temporizadores.pelota_tmr, PELOTA_TIMEOUT);
+	tmr_startms((tmr_t*)juego.temporizadores.joystick_tmr, JOYSTICK_TIMEOUT);
 
 	return 1;
 }
@@ -658,8 +791,7 @@ int systemSetup (void) {
 //------------------------------------------------------------------
 // ARKANOPI: FUNCION PRINCIPAL MAIN
 //------------------------------------------------------------------
-int main ()
-{
+int main () {
 	#ifdef __MODO_DEBUG_TERMINAL__
 		piLock (STD_IO_BUFFER_KEY);
 		printf("%s\n", "[LOG] main");
@@ -672,6 +804,7 @@ int main ()
 	fsm_trans_t arkano_tabla[] = {
 		{WAIT_START, compruebaTeclaPulsada, WAIT_PUSH, inicializaJuego},
 		{WAIT_PUSH, compruebaTimeoutPelota, WAIT_PUSH, movimientoPelota},
+		{WAIT_PUSH, compruebaTimeoutJoystick, WAIT_PUSH, movimientoJoystick},
 		{WAIT_PUSH, compruebaTeclaRaquetaIzquierda, WAIT_PUSH, mueveRaquetaIzquierda},
 		{WAIT_PUSH, compruebaTeclaRaquetaDerecha, WAIT_PUSH, mueveRaquetaDerecha},
 		{WAIT_PUSH, compruebaFinalJuego, WAIT_END, finalJuego},
@@ -692,4 +825,5 @@ int main ()
 	fsm_destroy (arkano_fsm);
 	tmr_destroy((tmr_t*)juego.temporizadores.refresco_tmr);
 	tmr_destroy((tmr_t*)juego.temporizadores.pelota_tmr);
+	tmr_destroy((tmr_t*)juego.temporizadores.joystick_tmr);
 }

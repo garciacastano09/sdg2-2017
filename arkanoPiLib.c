@@ -259,8 +259,8 @@ void pintaPelota(tipo_pelota* p_pelota, tipo_pantalla* p_pantalla) {
 				piLock (STD_IO_BUFFER_KEY);
 				printf("\n\nPROBLEMAS!!!! posicion y=%d de la pelota INVALIDA!!!\n\n", p_pelota->y);
 				piUnlock (STD_IO_BUFFER_KEY);
+				fflush(stdout);
 			#endif
-			fflush(stdout);
 		}
 	}
 	else {
@@ -268,8 +268,8 @@ void pintaPelota(tipo_pelota* p_pelota, tipo_pantalla* p_pantalla) {
 			piLock (STD_IO_BUFFER_KEY);
 			printf("\n\nPROBLEMAS!!!! posicion x=%d de la pelota INVALIDA!!!\n\n", p_pelota->x);
 			piUnlock (STD_IO_BUFFER_KEY);
+			fflush(stdout);
 		#endif
-		fflush(stdout);
 	}
 }
 

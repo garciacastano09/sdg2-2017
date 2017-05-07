@@ -15,6 +15,14 @@
 #include "fsm.h"
 #include "tmr.h"
 
+
+//------------------------------------------------------------------
+// VARIABLES BUS SPI
+//------------------------------------------------------------------
+#define SPI_ADC_CH 0
+#define SPI_ADC_FREQ 1000000 //1MHz
+
+
 // FLAGS DEL SISTEMA
 #define CLK_MS 10 // PERIODO DE ACTUALIZACION DE LA MAQUINA ESTADOS
 
@@ -43,10 +51,13 @@
 #define FLAG_RAQUETA_DERECHA			0x02
 #define FLAG_RAQUETA_IZQUIERDA			0x04
 #define FLAG_FINAL_JUEGO		0x8
+#define FLAG_JOYSTICK		0x16
 
 #define DEBOUNCE_TIME  5
+
 #define PELOTA_TIMEOUT 500 //tiempo de movimiento de pelota
 #define REFRESCO_TIMEOUT 1 //tiempo de exploraci�n de columnas
+#define JOYSTICK_TIMEOUT 100 //tiempo de exploraci�n de columnas
 
 #define __MODO_DEBUG_TERMINAL__ 0 //tiempo de exploraci�n de columnas
 
@@ -69,6 +80,7 @@ typedef enum {
 typedef struct {
 	tmr_t* pelota_tmr;
 	tmr_t* refresco_tmr;
+	tmr_t* joystick_tmr;
 } tipo_temporizadores;
 
 
