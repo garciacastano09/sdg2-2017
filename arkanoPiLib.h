@@ -74,5 +74,7 @@ void pintaPelota(tipo_pelota* p_pelota, tipo_pantalla* p_pantalla);
 void actualizaPantalla(tipo_arkanoPi* p_arkanoPi);
 void inicializaArkanoPi(tipo_arkanoPi* p_arkanoPi);
 int calculaLadrillosRestantes(tipo_pantalla* p_ladrillos);
+void pintaMensajeVictoria(tipo_pantalla* p_pantalla);
+void pintaMensajeDerrota(tipo_pantalla* p_pantalla);
 
 #endif /* _ARKANOPILIB_H_ */

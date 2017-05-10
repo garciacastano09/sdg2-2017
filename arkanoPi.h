@@ -9,6 +9,9 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/time.h>
+
+// #include "kbhit.h" // para poder detectar teclas pulsadas sin bloqueo y leer las teclas pulsadas
+
 #include "arkanoPi.h"
 #include "arkanoPiLib.h"
 #include <wiringPi.h>
@@ -21,7 +24,6 @@
 //------------------------------------------------------------------
 #define SPI_ADC_CH 0
 #define SPI_ADC_FREQ 1000000 //1MHz
-
 
 // FLAGS DEL SISTEMA
 #define CLK_MS 10 // PERIODO DE ACTUALIZACION DE LA MAQUINA ESTADOS
@@ -51,15 +53,12 @@
 #define FLAG_RAQUETA_DERECHA			0x02
 #define FLAG_RAQUETA_IZQUIERDA			0x04
 #define FLAG_FINAL_JUEGO		0x8
-#define FLAG_JOYSTICK		0x16
+#define FLAG_JOYSTICK		0x10
 
 #define DEBOUNCE_TIME  5
-
 #define PELOTA_TIMEOUT 500 //tiempo de movimiento de pelota
 #define REFRESCO_TIMEOUT 1 //tiempo de exploraci�n de columnas
-#define JOYSTICK_TIMEOUT 100 //tiempo de exploraci�n de columnas
-
-#define __MODO_DEBUG_TERMINAL__ 0 //tiempo de exploraci�n de columnas
+#define JOYSTICK_TIMEOUT 100
 
 // A 'key' which we can lock and unlock - values are 0 through 3
 //	This is interpreted internally as a pthread_mutex by wiringPi
@@ -87,7 +86,6 @@ typedef struct {
 typedef struct {
 	tipo_arkanoPi arkanoPi;
 	tipo_estados_juego estado;
-	char teclaPulsada;
 	tipo_temporizadores temporizadores;
 } tipo_juego;
 
@@ -139,5 +137,11 @@ void reboteRaqueta(void);
 //------------------------------------------------------
 int systemSetup (void);
 void delayUntil (unsigned int next);
+float lecturaADC (void);
+void mueveRaquetaAPosicion (int posicion);
+//------------------------------------------------------
+// ARKANO PI: SUBRUTINAS DE ATENCION A LAS INTERRUPCIONES
+//------------------------------------------------------
+PI_THREAD (thread_explora_teclado);
 
 #endif /* ARKANOPI_H_ */
