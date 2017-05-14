@@ -10,14 +10,11 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-// #include "kbhit.h" // para poder detectar teclas pulsadas sin bloqueo y leer las teclas pulsadas
-
 #include "arkanoPi.h"
 #include "arkanoPiLib.h"
 #include <wiringPi.h>
 #include "fsm.h"
 #include "tmr.h"
-
 
 //------------------------------------------------------------------
 // VARIABLES BUS SPI
@@ -25,9 +22,10 @@
 #define SPI_ADC_CH 0
 #define SPI_ADC_FREQ 1000000 //1MHz
 
-// FLAGS DEL SISTEMA
-#define CLK_MS 10 // PERIODO DE ACTUALIZACION DE LA MAQUINA ESTADOS
+// PERIODO DE ACTUALIZACION DE LA MAQUINA ESTADOS
+#define CLK_MS 10
 
+// PINES GPIO
 #define GPIO_COL_1 14
 #define GPIO_COL_2 17
 #define GPIO_COL_3 18
@@ -42,11 +40,10 @@
 #define GPIO_RAQ_IZQ 26
 #define GPIO_RAQ_DER 27
 
-// A 'key' which we can lock and unlock - values are 0 through 3
-//	This is interpreted internally as a pthread_mutex by wiringPi
-//	which is hiding some of that to make life simple.
+// KEYS DE MUTEX
 #define	STD_IO_BUFFER_KEY	1
 #define	FLAGS_ARKANO_KEY	2
+#define	PANTALLA_KEY	4
 
 // FLAGS DE LA FSM
 #define FLAG_PELOTA			0x01
@@ -55,21 +52,15 @@
 #define FLAG_FINAL_JUEGO		0x8
 #define FLAG_JOYSTICK		0x10
 
+// CONSTANTES DE TIEMPO
 #define DEBOUNCE_TIME  5
 #define PELOTA_TIMEOUT 500 //tiempo de movimiento de pelota
-#define REFRESCO_TIMEOUT 1 //tiempo de exploraci�n de columnas
+#define REFRESCO_TIMEOUT 1 //tiempo de exploracion de columnas
 #define JOYSTICK_TIMEOUT 100
 
-// A 'key' which we can lock and unlock - values are 0 through 3
-//	This is interpreted internally as a pthread_mutex by wiringPi
-//	which is hiding some of that to make life simple.
-
 //------------------------------------------------------------------
-// REFRESCO DE LEDS
+// STRUCTS
 //------------------------------------------------------------------
-void refrescarLeds(union sigval value);
-
-void activaFilasLed (tipo_pantalla* p_pantalla, int* columna);
 
 typedef enum {
 	WAIT_START=0,
@@ -89,6 +80,17 @@ typedef struct {
 	tipo_temporizadores temporizadores;
 } tipo_juego;
 
+//------------------------------------------------------------------
+// REFRESCO DE LEDS
+//------------------------------------------------------------------
+void refrescarLeds(union sigval value);
+void activaFilasLed (tipo_pantalla* p_pantalla, int* columna);
+
+//------------------------------------------------------------------
+// MOVIMIENTO JOYSTICK
+//------------------------------------------------------------------
+void mueveRaquetaAPosicion (int posicion);
+float lecturaADC (void);
 
 //------------------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES SETUP
@@ -121,6 +123,7 @@ void reseteaJuego (fsm_t* this);
 void mueveRaquetaIzquierda (fsm_t* this);
 void mueveRaquetaDerecha (fsm_t* this);
 void movimientoPelota (fsm_t* this);
+void movimientoJoystick (fsm_t* this);
 
 //------------------------------------------------------------------
 // ARKANOPI FSM: FUNCIONES SUPPORT
@@ -137,11 +140,5 @@ void reboteRaqueta(void);
 //------------------------------------------------------
 int systemSetup (void);
 void delayUntil (unsigned int next);
-float lecturaADC (void);
-void mueveRaquetaAPosicion (int posicion);
-//------------------------------------------------------
-// ARKANO PI: SUBRUTINAS DE ATENCION A LAS INTERRUPCIONES
-//------------------------------------------------------
-PI_THREAD (thread_explora_teclado);
 
 #endif /* ARKANOPI_H_ */

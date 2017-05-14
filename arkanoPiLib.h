@@ -20,8 +20,9 @@
 #define REBOTE_LATERAL		98
 #define NO_REBOTE			99
 
-#define	PANTALLA_KEY	4
-
+//------------------------------------------------------------------
+// STRUCTS
+//------------------------------------------------------------------
 typedef struct {
 	// Posicion
 	int x;
