@@ -736,12 +736,16 @@ int systemSetup (void) {
 		piUnlock (STD_IO_BUFFER_KEY);
 		return -1;
 	}
+	// COMENTADO POR ERRORES EN LA CONFIGURACION SPI
+	/*
 	if (wiringPiSPISetup (SPI_ADC_CH, SPI_ADC_FREQ) < 0) { 	// Configuracion del ADC en el CH0
 		piLock (STD_IO_BUFFER_KEY);
 		printf ("No se pudo configurar correctamente el dispositivo en CH0\n");
 		piUnlock (STD_IO_BUFFER_KEY);
 		return -1;
 	}
+	*/
+	
 	int i=0;
 	for (i=0; i<4; i++){
 		pinMode(gpio_col[i], OUTPUT); // Configurar puertos de las columnas del panel de leds como salidas
@@ -761,7 +765,9 @@ int systemSetup (void) {
 
 	tmr_startms((tmr_t*)juego.temporizadores.refresco_tmr, REFRESCO_TIMEOUT); // Arrancar temporizadores necesarios
 	tmr_startms((tmr_t*)juego.temporizadores.pelota_tmr, PELOTA_TIMEOUT);
-	tmr_startms((tmr_t*)juego.temporizadores.joystick_tmr, JOYSTICK_TIMEOUT);
+
+	// COMENTADO POR ERRORES EN LA CONFIGURACION SPI
+	//tmr_startms((tmr_t*)juego.temporizadores.joystick_tmr, JOYSTICK_TIMEOUT);
 
 	return 1;
 }
