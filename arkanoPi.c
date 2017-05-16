@@ -35,7 +35,9 @@ void refrescarLeds(union sigval value){
 	*/
     col_counter++;
     columna = col_counter%10; // Obtenemos la columna sobre la que vamos a actuar en esta iteracion
+    piLock(PANTALLA_KEY);
     activaFilasLed(&(juego.arkanoPi.pantalla),&(columna));
+    piUnlock(PANTALLA_KEY);
     switch (columna){ // Segun el valor de columna, se introduce en el decoder un valor logico determinado
         case 0: // 0000
             digitalWrite(gpio_col[0], LOW);
@@ -294,6 +296,11 @@ void inicializaJuego (fsm_t* this) {
 	actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
 	// pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 
+	tmr_startms((tmr_t*)juego.temporizadores.pelota_tmr, PELOTA_TIMEOUT);
+
+	// COMENTADO POR ERRORES EN LA CONFIGURACION SPI
+	//tmr_startms((tmr_t*)juego.temporizadores.joystick_tmr, JOYSTICK_TIMEOUT);
+
 	piLock (FLAGS_ARKANO_KEY); // Desmarcado de todos los flags
 	flags_arkano_FSM &= ~FLAG_PELOTA;
 	flags_arkano_FSM &= ~FLAG_RAQUETA_DERECHA;
@@ -537,7 +544,7 @@ void mueveRaquetaAPosicion (int posicion) {
 
 		pintaRaqueta((tipo_raqueta*)(&(juego.arkanoPi.raqueta)), (tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 		actualizaPantalla((tipo_arkanoPi*)(&(juego.arkanoPi)));
-		pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
+		//pintaPantallaPorTerminal((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
 	}
 }
 
@@ -702,16 +709,11 @@ float lecturaADC (void) {
 	int salida_SPI = ((ByteSPI[1] << 5) | (ByteSPI[2] >> 3)) & 0xFFF;
 	voltaje_medido = 2*2.50 * (((float) salida_SPI)/4095.0);
 	piLock (STD_IO_BUFFER_KEY);
-	printf("Lectura ADC MAX1246: %d\n", resultado_SPI);
-	printf("Primer byte: %02X \n", ByteSPI[0]);
-	printf("Segundo Byte: %02X \n", ByteSPI[1]);
-	printf("Tercer byte: %02X \n", ByteSPI[2]);
-	printf("Valor entero: %i \n", salida_SPI);
 	printf("Voltaje medido: %f \n",voltaje_medido);
 	piUnlock (STD_IO_BUFFER_KEY);
 	fflush(stdout);
 	return voltaje_medido;
-	// return rand()%4000;  // Numero random para debug
+	//return rand()%4000;  // Numero random para debug
 }
 
 //------------------------------------------------------
@@ -736,7 +738,8 @@ int systemSetup (void) {
 		piUnlock (STD_IO_BUFFER_KEY);
 		return -1;
 	}
-	// COMENTADO POR ERRORES EN LA CONFIGURACION SPI
+
+	// COMENTADO POR ERRORES EN EL JUEGO AL INCLUIR LAS RUTINAS DEL JOYSTICK
 	/*
 	if (wiringPiSPISetup (SPI_ADC_CH, SPI_ADC_FREQ) < 0) { 	// Configuracion del ADC en el CH0
 		piLock (STD_IO_BUFFER_KEY);
@@ -745,7 +748,7 @@ int systemSetup (void) {
 		return -1;
 	}
 	*/
-	
+
 	int i=0;
 	for (i=0; i<4; i++){
 		pinMode(gpio_col[i], OUTPUT); // Configurar puertos de las columnas del panel de leds como salidas
@@ -755,19 +758,19 @@ int systemSetup (void) {
 		pullUpDnControl (gpio_row[i], PUD_DOWN ); // todas las filas inicialmente a pull down
 	}
 	pinMode(GPIO_RAQ_IZQ, INPUT); // Configurar puertos de los pulsadores como entradas
+	pullUpDnControl (GPIO_RAQ_IZQ, PUD_OFF ); // inicialmente a pull off
+
 	pinMode(GPIO_RAQ_DER, INPUT);
-	wiringPiISR(GPIO_RAQ_IZQ, INT_EDGE_FALLING, pulsaRaqIzq);
-	wiringPiISR(GPIO_RAQ_DER, INT_EDGE_FALLING, pulsaRaqDer);
+	pullUpDnControl (GPIO_RAQ_DER, PUD_OFF ); // inicialmente a pull off
+
+	wiringPiISR(GPIO_RAQ_IZQ, INT_EDGE_RISING, pulsaRaqIzq);
+	wiringPiISR(GPIO_RAQ_DER, INT_EDGE_RISING, pulsaRaqDer);
 
 	juego.temporizadores.refresco_tmr = tmr_new(refrescarLeds); // Configurar temporizadores necesarios
 	juego.temporizadores.pelota_tmr = tmr_new(pelotaTmrFinished);
 	juego.temporizadores.joystick_tmr = tmr_new(joystickTmrFinished);
 
 	tmr_startms((tmr_t*)juego.temporizadores.refresco_tmr, REFRESCO_TIMEOUT); // Arrancar temporizadores necesarios
-	tmr_startms((tmr_t*)juego.temporizadores.pelota_tmr, PELOTA_TIMEOUT);
-
-	// COMENTADO POR ERRORES EN LA CONFIGURACION SPI
-	//tmr_startms((tmr_t*)juego.temporizadores.joystick_tmr, JOYSTICK_TIMEOUT);
 
 	return 1;
 }

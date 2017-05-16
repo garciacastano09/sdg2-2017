@@ -301,7 +301,7 @@ void inicializaArkanoPi(tipo_arkanoPi* p_arkanoPi) {
 int calculaLadrillosRestantes(tipo_pantalla* p_ladrillos) {
 	/*
 	Funcion encargada de evaluar el estado de ocupacion del area de juego por los ladrillos y devolver
-	el numero de estos 
+	el numero de estos
 	*/
 	piLock (STD_IO_BUFFER_KEY);
 	printf("%s\n", "[LOG] CalculaLadrillosRestantes");
