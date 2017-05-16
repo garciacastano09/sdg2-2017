@@ -418,7 +418,7 @@ void reseteaJuego (fsm_t* this) {
 	*/
 	piLock (STD_IO_BUFFER_KEY);
 	printf("%s\n", "[LOG] ReseteaJuego");
-	piLock (STD_IO_BUFFER_KEY);
+	piUnlock (STD_IO_BUFFER_KEY);
 
 	inicializaArkanoPi((tipo_arkanoPi*)(&(juego.arkanoPi)));
 	pintaMensajeInicial((tipo_pantalla*)(&(juego.arkanoPi.pantalla)));
